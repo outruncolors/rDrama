@@ -93,7 +93,7 @@ def build_symbols(for_payout):
 	shuffle(all_symbols)
 			
 	if for_payout == 0:
-		return "".join([all_symbols[0], all_symbols[1], all_symbols[2]])
+		return "".join([all_symbols[0], ",", all_symbols[1], ",", all_symbols[2]])
 	elif for_payout == 1:
 		indices = shuffle([0, 1, 2])
 		symbol_set = ["", "", ""]
@@ -106,15 +106,37 @@ def build_symbols(for_payout):
 		symbol_set[match_b] = matching_symbol
 		symbol_set[nonmatch] = other_symbol
 
-		return "".join(symbol_set)
+		return "".join([symbol_set[0], ",", symbol_set[1], ",", symbol_set[2]])
 	else:
 		relevantSymbols = shuffle(payout_to_symbols[for_payout])
 		symbol = relevantSymbols[0]
 		
-		return "".join([symbol, symbol, symbol])
+		return "".join([symbol, ",", symbol, ",", symbol])
 
 def build_text(wager_value, result, user, currency):
 	if result == 0: return f'Lost {wager_value} {currency}'
 	elif result == 1: return 'Broke Even'
 	elif result == 12: return f'Jackpot! Won {wager_value * (result-1)} {currency}'
 	else: return f'Won {wager_value * (result-1)} {currency}'
+
+# Added after creation of Casino
+def casino_slot_pull(gambler, wager_value):
+	over_min = wager_value >= minimum_bet
+	under_max = wager_value <= maximum_bet
+	has_proper_funds = gambler.coins >= wager_value
+
+	if (over_min and under_max and has_proper_funds):
+		gambler.coins -= wager_value
+		gambler.winnings -= wager_value
+		
+		payout = determine_payout()
+		reward = wager_value * payout
+
+		gambler.coins += reward
+		gambler.winnings += reward
+
+		symbols = build_symbols(payout)
+		text = build_text(wager_value, payout, gambler, "Coins")
+		return True, symbols, text
+	else:
+		return False, "", ""
