@@ -17,5 +17,6 @@ from .awards import *
 from .giphy import *
 from .subs import *
 from .lottery import *
+from .casino import *
 from .polls import *
 from .notifications import *
