@@ -170,7 +170,7 @@ def lottery_required(f):
 	def wrapper(*args, **kwargs):
 		v = get_logged_in_user()
 
-		if not LOTTERY_ENABLED: abort(404)
+		if not CASINO_ENABLED: abort(404)
 		if v and not v.can_gamble: abort(403)
 
 		return make_response(f(v=v))
