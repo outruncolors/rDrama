@@ -1,3 +1,61 @@
 {% extends "default.html" %} {% block content %}
-<div>Casino</div>
-{% endblock %}
+<link rel="stylesheet" href="/assets/css/casino.css?v=11" />
+
+<h1>Casino</h1>
+
+<!-- #region Slots  -->
+<h2>Slots</h2>
+
+<!-- Results -->
+<div class="casino-slots-results">
+  <div class="reel">
+    <img src="/i/rDrama/coins.webp?v=3009" alt="coin" />
+  </div>
+  <div class="reel">
+    <img src="/i/rDrama/coins.webp?v=3009" alt="coin" />
+  </div>
+  <div class="reel">
+    <img src="/i/rDrama/coins.webp?v=3009" alt="coin" />
+  </div>
+</div>
+
+<!-- Controls -->
+<div style="padding: 0.5rem; max-width: 400px">
+  <div class="lottery-page--stat">
+    <div class="lottery-page--stat-keys" style="margin-right: 1rem">
+      <div>Enter Bet</div>
+    </div>
+    <div class="lottery-page--stat-values">
+      <div>
+        <input
+          id="casinoSlotsBet"
+          class="form-control"
+          autocomplete="off"
+          value="100"
+          min="100"
+          step="1"
+          aria-label="Quantity"
+          name="casinoSlotsBet"
+          type="number"
+          style="flex: 1; max-width: 200px; text-align: right"
+        />
+      </div>
+    </div>
+  </div>
+  <button
+    type="button"
+    class="btn btn-success lottery-page--action"
+    id="casinoSlotsPull"
+    style="width: 100%"
+  >
+    Pull
+  </button>
+</div>
+
+<!-- #endregion -->
+
+<!-- #region Blackjack  -->
+<h2>Blackjack</h2>
+<!-- #endregion -->
+
+{% include "lottery.html" %} {% endblock %}
