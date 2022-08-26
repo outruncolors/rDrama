@@ -120,23 +120,33 @@ def build_text(wager_value, result, user, currency):
 	else: return f'Won {wager_value * (result-1)} {currency}'
 
 # Added after creation of Casino
-def casino_slot_pull(gambler, wager_value):
+def casino_slot_pull(gambler, wager_value, currency):
 	over_min = wager_value >= minimum_bet
 	under_max = wager_value <= maximum_bet
-	has_proper_funds = gambler.coins >= wager_value
+	using_dramacoin = currency == "dramacoin"
+	using_marseybux = not using_dramacoin
+	has_proper_funds = (using_dramacoin and gambler.coins >= wager_value) or (using_marseybux and gambler.procoins >= wager_value)
 
 	if (over_min and under_max and has_proper_funds):
-		gambler.coins -= wager_value
+		if using_dramacoin:
+			gambler.coins -= wager_value
+		else:
+			gambler.procoins -= wager_value
+
 		gambler.winnings -= wager_value
 		
 		payout = determine_payout()
 		reward = wager_value * payout
 
-		gambler.coins += reward
+		if using_dramacoin:
+			gambler.coins += reward
+		else:
+			gambler.procoins += reward
+		
 		gambler.winnings += reward
 
 		symbols = build_symbols(payout)
-		text = build_text(wager_value, payout, gambler, "Coins")
+		text = build_text(wager_value, payout, gambler, currency)
 		return True, symbols, text
 	else:
 		return False, "", ""

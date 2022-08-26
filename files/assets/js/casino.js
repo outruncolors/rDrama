@@ -1,5 +1,6 @@
 function pullSlots() {
   const wager = document.getElementById("casinoSlotsBet").value;
+  const currency = document.querySelector('input[name="casinoSlotsCurrency"]:checked').value;
 
   document.getElementById("casinoSlotsBet").disabled = true;
   document.getElementById("casinoSlotsPull").disabled = true;
@@ -11,6 +12,7 @@ function pullSlots() {
   const form = new FormData();
   form.append("formkey", formkey());
   form.append("wager", wager);
+  form.append("currency", currency);
 
   xhr.send(form);
 }
@@ -40,7 +42,6 @@ function handleSlotsResponse(xhr) {
     slotsResult.style.display = "block";
     slotsResult.innerText = response.text;
 
-    
     if (response.text.includes("Won")) {
       if (response.text.includes("Jackpot")) {
         slotsResult.classList.add("text-warning");
@@ -53,7 +54,7 @@ function handleSlotsResponse(xhr) {
   } else {
     slotsResult.style.display = "block";
     slotsResult.innerText = response.error;
-    slotsResult.classList.add('text-danger')
+    slotsResult.classList.add("text-danger");
 
     console.error(response.error);
   }

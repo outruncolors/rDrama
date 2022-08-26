@@ -25,8 +25,6 @@
   <div class="lottery-page--stat">
     <div class="lottery-page--stat-keys" style="margin-right: 1rem">
       <div>Enter Bet</div>
-    </div>
-    <div class="lottery-page--stat-values">
       <div>
         <input
           id="casinoSlotsBet"
@@ -42,6 +40,50 @@
         />
       </div>
     </div>
+
+    <div class="lottery-page--stat-values">
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="casinoSlotsCurrency"
+          id="casinoSlotsCurrencyDramacoin"
+          value="dramacoin"
+          checked
+        />
+        <label class="form-check-label" for="casinoSlotsCurrencyDramacoin">
+          <img
+            src="/i/rDrama/coins.webp?v=3009"
+            alt="coin"
+            width="40"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            title="Dramacoin"
+            aria-label="Dramacoin"
+          />
+        </label>
+      </div>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          name="casinoSlotsCurrency"
+          id="casinoSlotsCurrencyMarseybux"
+          value="marseybux"
+        />
+        <label class="form-check-label" for="casinoSlotsCurrencyMarseybux">
+          <img
+            src="/i/marseybux.webp?v=2000"
+            alt="marseybux"
+            width="40"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            title="Marseybux"
+            aria-label="Marseybux"
+          />
+        </label>
+      </div>
+    </div>
   </div>
 
   <button
@@ -54,7 +96,7 @@
     Pull
   </button>
 
-  <div id="casinoSlotsResult" style="display: none; text-align: right;"></div>
+  <div id="casinoSlotsResult" style="display: none; text-align: right"></div>
 </div>
 
 <!-- #endregion -->

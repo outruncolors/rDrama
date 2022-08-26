@@ -23,12 +23,17 @@ def pull_slots(v):
     except:
         return {"error": "Invalid wager."}
 
-    if wager > v.coins:
-        return {"error": "Not enough coins to make that bet."}
+    try:
+        currency = request.values.get("currency")
+    except:
+        return {"error": "Invalid currency (expected 'dramacoin' or 'marseybux')."}
 
-    success, symbols, text = casino_slot_pull(v, wager)
+    if (currency == "dramacoin" and wager > v.coins) or (currency == "marseybux" and wager > v.procoins):
+        return {"error": f"Not enough {currency} to make that bet."}
+
+    success, symbols, text = casino_slot_pull(v, wager, currency)
 
     if success:
         return {"symbols": symbols, "text": text}
     else:
-        return {"error": "Wager must be more than 100 dramacoins."}
+        return {"error": "Wager must be more than 100 {currency}."}
