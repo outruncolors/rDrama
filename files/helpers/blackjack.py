@@ -5,7 +5,7 @@ from files.helpers.const import *
 
 deck_count = 4
 ranks = ("2", "3", "4", "5", "6", "7", "8", "9", "X", "J", "Q", "K", "A")
-suits = ("♠️", "♥️", "♣️", "♦️")
+suits = ("S", "H", "C", "D")
 coins_command_word = "!blackjack"
 marseybux_command_word = "!blackjackmb"
 minimum_bet = 100
@@ -187,3 +187,52 @@ def apply_game_result(from_comment, wager, result, kind):
 	if (reward > -1):
 		currency_value = int(getattr(user, kind, 0))
 		setattr(user, kind, currency_value + wager_value + reward)
+
+# Added after creation of Casino
+def apply_blackjack_result(gambler, wager_value, currency_prop, result):
+	if result == 'push':
+		reward = 0
+	elif result == 'won':
+		reward = wager_value
+	elif result == 'blackjack':
+		reward = floor(wager_value * 3/2)
+	else:
+		reward = -wager_value
+
+	gambler.winnings += reward
+
+	if (reward > -1):
+		currency_value = int(getattr(gambler, currency_prop, 0))
+		setattr(gambler, currency_prop, currency_value + wager_value + reward)
+
+
+def casino_deal_blackjack(gambler, wager_value, currency):
+	over_min = wager_value >= minimum_bet
+	under_max = wager_value <= maximum_bet
+	using_dramacoin = currency == "dramacoin"
+	using_marseybux = not using_dramacoin
+	has_proper_funds = (using_dramacoin and gambler.coins >= wager_value) or (
+		using_marseybux and gambler.procoins >= wager_value)
+	currency_prop = "coins" if using_dramacoin else "procoins"
+	currency_value = getattr(gambler, currency_prop, 0)
+
+	if (over_min and under_max and has_proper_funds):
+		setattr(gambler, currency_prop, currency_value - wager_value)
+
+		player_hand, dealer_hand, rest_of_deck = deal_initial_cards()
+		status = 'active'
+		player_value = get_hand_value(player_hand)
+		dealer_value = get_hand_value(dealer_hand)
+
+		if player_value == 21 and dealer_value == 21:
+			status = 'push'
+			apply_blackjack_result(gambler, wager_value, currency_prop, status)
+		elif player_value == 21:
+			status = 'blackjack'
+			apply_blackjack_result(gambler, wager_value, currency_prop, status)
+
+		# Persist game data here.
+
+		return True, player_hand, dealer_hand, status
+	else:
+		return False, "", "", ""

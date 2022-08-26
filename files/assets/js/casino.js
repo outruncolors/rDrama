@@ -103,8 +103,68 @@ function handleBlackjackResponse(xhr) {
   blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    console.log("Success.");
+    const { player, dealer, status } = response;
+    const lettersToSuits = {
+      S: "♠️",
+      H: "♥️",
+      C: "♣️",
+      D: "♦️",
+    };
+    const suitsToColors = {
+      "♠️": "black",
+      "♥️": "red",
+      "♣️": "black",
+      "♦️": "red",
+    };
+
+    // Clear everything.
+    Array.from(document.querySelectorAll(".playing-card")).forEach((card) => {
+      card.innerText = "";
+      card.style.color = "unset";
+      card.classList.remove('dealt');
+    });
+
+    // Show dealer cards.
+    const dealerSlots = Array.from(
+      document.querySelectorAll('.playing-card[data-who="dealer"]')
+    );
+    for (let i = 0; i < dealer.length; i++) {
+      const slot = dealerSlots[i];
+      slot.classList.add('dealt');
+
+      if (i > 0 && status === 'active') {
+        break;
+      }
+
+      const rank = dealer[i][0];
+      const suit = lettersToSuits[dealer[i][1]];
+      const card = rank + suit;
+      slot.innerText = card;
+      slot.style.color = suitsToColors[suit];
+    }
+
+    // Show player cards.
+    const playerSlots = Array.from(
+      document.querySelectorAll('.playing-card[data-who="player"]')
+    );
+    for (let i = 0; i < player.length; i++) {
+      const slot = playerSlots[i];
+      const rank = player[i][0];
+      const suit = lettersToSuits[player[i][1]];
+      const card = rank + suit;
+      slot.innerText = card;
+      slot.style.color = suitsToColors[suit];
+      slot.classList.add('dealt');
+    }
+
+    // Adjust available actions.
+    document.getElementById("casinoBlackjackBet").disabled = false;
+    document.getElementById("casinoBlackjackDeal").disabled = false;
   } else {
-    console.log("Failure.");
+    blackjackResult.style.display = "block";
+    blackjackResult.innerText = response.error;
+    blackjackResult.classList.add("text-danger");
+
+    console.error(response.error);
   }
 }
