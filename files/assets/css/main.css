@@ -5376,7 +5376,6 @@ audio, video {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 2rem;
 }
 
 .lottery-page--wrapper > div {

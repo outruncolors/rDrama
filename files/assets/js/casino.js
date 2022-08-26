@@ -1,6 +1,9 @@
+// Slots
 function pullSlots() {
   const wager = document.getElementById("casinoSlotsBet").value;
-  const currency = document.querySelector('input[name="casinoSlotsCurrency"]:checked').value;
+  const currency = document.querySelector(
+    'input[name="casinoSlotsCurrency"]:checked'
+  ).value;
 
   document.getElementById("casinoSlotsBet").disabled = true;
   document.getElementById("casinoSlotsPull").disabled = true;
@@ -61,4 +64,47 @@ function handleSlotsResponse(xhr) {
 
   document.getElementById("casinoSlotsBet").disabled = false;
   document.getElementById("casinoSlotsPull").disabled = false;
+}
+
+// Blackjack
+function dealBlackjack() {
+  const wager = document.getElementById("casinoBlackjackBet").value;
+  const currency = document.querySelector(
+    'input[name="casinoBlackjackCurrency"]:checked'
+  ).value;
+
+  document.getElementById("casinoBlackjackBet").disabled = true;
+  document.getElementById("casinoBlackjackDeal").disabled = true;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("post", "/casino/blackjack");
+  xhr.onload = handleBlackjackResponse.bind(null, xhr);
+
+  const form = new FormData();
+  form.append("formkey", formkey());
+  form.append("wager", wager);
+  form.append("currency", currency);
+
+  xhr.send(form);
+}
+
+function handleBlackjackResponse(xhr) {
+  let response;
+
+  try {
+    response = JSON.parse(xhr.response);
+  } catch (error) {
+    console.error(error);
+  }
+
+  const succeeded =
+    xhr.status >= 200 && xhr.status < 300 && response && !response.error;
+  const blackjackResult = document.getElementById("casinoBlackjackResult");
+  blackjackResult.classList.remove("text-success", "text-danger");
+
+  if (succeeded) {
+    console.log("Success.");
+  } else {
+    console.log("Failure.");
+  }
 }
