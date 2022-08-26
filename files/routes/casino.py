@@ -55,13 +55,9 @@ def deal_blackjack(v):
     if (currency == "dramacoin" and wager > v.coins) or (currency == "marseybux" and wager > v.procoins):
         return {"error": f"Not enough {currency} to make that bet."}
     
-    success, player, dealer, status = casino_deal_blackjack(v, wager, currency)
+    success, game_state = casino_deal_blackjack(v, wager, currency)
 
-    return { "player": player, "dealer": dealer, "status": status }
-
-    # success, player, dealer, status = casino_deal_blackjack(v, wager, currency)
-
-    # if success:
-    #     return { "player": player, "dealer": dealer, "status": status }
-    # else: 
-    #     return {"error": "Wager must be more than 100 {currency}."}
+    if success:
+        return { "game_state": game_state }
+    else:
+        return {"error": "Wager must be more than 100 {currency}."}

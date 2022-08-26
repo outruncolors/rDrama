@@ -1,7 +1,10 @@
+import json
 from json.encoder import INFINITY
 import random
 from math import floor
 from files.helpers.const import *
+from files.classes.casino_game import Casino_Game
+from flask import g
 
 deck_count = 4
 ranks = ("2", "3", "4", "5", "6", "7", "8", "9", "X", "J", "Q", "K", "A")
@@ -232,7 +235,20 @@ def casino_deal_blackjack(gambler, wager_value, currency):
 			apply_blackjack_result(gambler, wager_value, currency_prop, status)
 
 		# Persist game data here.
+		initial_game_state = {
+			"player": player_hand,
+			"dealer": dealer_hand,
+			"status": status
+		}
+		casino_game = Casino_Game()
+		casino_game.user_id = gambler.id
+		casino_game.currency = currency_prop
+		casino_game.wager = wager_value
+		casino_game.winnings = 0
+		casino_game.kind = 'blackjack'
+		casino_game.game_state = json.dumps(initial_game_state)
+		g.db.add(casino_game)
 
-		return True, player_hand, dealer_hand, status
+		return True, casino_game.game_state
 	else:
-		return False, "", "", ""
+		return False, "{}"

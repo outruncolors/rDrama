@@ -103,7 +103,8 @@ function handleBlackjackResponse(xhr) {
   blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    const { player, dealer, status } = response;
+    const { game_state } = response;
+    const { player, dealer, status } = JSON.parse(game_state);
     const lettersToSuits = {
       S: "♠️",
       H: "♥️",
