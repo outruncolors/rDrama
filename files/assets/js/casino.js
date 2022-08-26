@@ -130,17 +130,23 @@ function handleBlackjackResponse(xhr) {
     );
     for (let i = 0; i < dealer.length; i++) {
       const slot = dealerSlots[i];
-      slot.classList.add('dealt');
 
-      if (i > 0 && status === 'active') {
-        break;
+      if (slot) {
+        // Technically, the dealer can use more than 5 cards, though it's rare.
+        // In that case, the result message is good enough.
+        // Thanks, Carp. 🐠
+        slot.classList.add('dealt');
+  
+        if (i > 0 && status === 'active') {
+          break;
+        }
+  
+        const rank = dealer[i][0];
+        const suit = lettersToSuits[dealer[i][1]];
+        const card = rank + suit;
+        slot.innerText = card;
+        slot.style.color = suitsToColors[suit];
       }
-
-      const rank = dealer[i][0];
-      const suit = lettersToSuits[dealer[i][1]];
-      const card = rank + suit;
-      slot.innerText = card;
-      slot.style.color = suitsToColors[suit];
     }
 
     // Show player cards.
