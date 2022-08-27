@@ -32,10 +32,10 @@ def pull_slots(v):
     if (currency == "dramacoin" and wager > v.coins) or (currency == "marseybux" and wager > v.procoins):
         return {"error": f"Not enough {currency} to make that bet."}
 
-    success, symbols, text = casino_slot_pull(v, wager, currency)
+    success, game_state = casino_slot_pull(v, wager, currency)
 
     if success:
-        return {"symbols": symbols, "text": text}
+        return { "game_state": game_state }
     else:
         return {"error": "Wager must be more than 100 {currency}."}
 

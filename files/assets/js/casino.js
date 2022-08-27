@@ -35,23 +35,25 @@ function handleSlotsResponse(xhr) {
   slotsResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
+    const { game_state } = response;
+    const state = JSON.parse(game_state);
     const reels = Array.from(document.querySelectorAll(".reel"));
-    const symbols = response.symbols.split(",");
+    const symbols = state.symbols.split(",");
 
     for (let i = 0; i < 3; i++) {
       reels[i].innerHTML = symbols[i];
     }
 
     slotsResult.style.display = "block";
-    slotsResult.innerText = response.text;
+    slotsResult.innerText = state.text;
 
-    if (response.text.includes("Won")) {
-      if (response.text.includes("Jackpot")) {
+    if (state.text.includes("Won")) {
+      if (state.text.includes("Jackpot")) {
         slotsResult.classList.add("text-warning");
       } else {
         slotsResult.classList.add("text-success");
       }
-    } else if (response.text.includes("Lost")) {
+    } else if (state.text.includes("Lost")) {
       slotsResult.classList.add("text-danger");
     }
   } else {

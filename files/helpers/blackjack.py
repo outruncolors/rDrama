@@ -221,6 +221,7 @@ def casino_deal_blackjack(gambler, wager_value, currency):
 
 	if (over_min and under_max and has_proper_funds):
 		setattr(gambler, currency_prop, currency_value - wager_value)
+		gambler.winnings -= wager_value
 
 		player_hand, dealer_hand, rest_of_deck = deal_initial_cards()
 		status = 'active'
@@ -238,6 +239,7 @@ def casino_deal_blackjack(gambler, wager_value, currency):
 		initial_game_state = {
 			"player": player_hand,
 			"dealer": dealer_hand,
+			"rest_of_deck": rest_of_deck,
 			"status": status
 		}
 		casino_game = Casino_Game()
