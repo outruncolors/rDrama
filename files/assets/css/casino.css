@@ -46,3 +46,7 @@
 .casino-blackjack .blackjack-table .hand .playing-card.dealt {
   background-color: #ddd;
 }
+
+.casino-blackjack-actions {
+  text-align: right;
+}

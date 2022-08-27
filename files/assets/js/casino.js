@@ -69,27 +69,6 @@ function handleSlotsResponse(xhr) {
 }
 
 // Blackjack
-function dealBlackjack() {
-  const wager = document.getElementById("casinoBlackjackBet").value;
-  const currency = document.querySelector(
-    'input[name="casinoBlackjackCurrency"]:checked'
-  ).value;
-
-  document.getElementById("casinoBlackjackBet").disabled = true;
-  document.getElementById("casinoBlackjackDeal").disabled = true;
-
-  const xhr = new XMLHttpRequest();
-  xhr.open("post", "/casino/blackjack");
-  xhr.onload = handleBlackjackResponse.bind(null, xhr);
-
-  const form = new FormData();
-  form.append("formkey", formkey());
-  form.append("wager", wager);
-  form.append("currency", currency);
-
-  xhr.send(form);
-}
-
 function handleBlackjackResponse(xhr) {
   let response;
 
@@ -106,7 +85,8 @@ function handleBlackjackResponse(xhr) {
 
   if (succeeded) {
     const { game_state } = response;
-    const { player, dealer, status } = JSON.parse(game_state);
+    const state = JSON.parse(game_state);
+    const { player, dealer, status, id } = state;
     const lettersToSuits = {
       S: "♠️",
       H: "♥️",
@@ -124,7 +104,7 @@ function handleBlackjackResponse(xhr) {
     Array.from(document.querySelectorAll(".playing-card")).forEach((card) => {
       card.innerText = "";
       card.style.color = "unset";
-      card.classList.remove('dealt');
+      card.classList.remove("dealt");
     });
 
     // Show dealer cards.
@@ -138,12 +118,12 @@ function handleBlackjackResponse(xhr) {
         // Technically, the dealer can use more than 5 cards, though it's rare.
         // In that case, the result message is good enough.
         // Thanks, Carp. 🐠
-        slot.classList.add('dealt');
-  
-        if (i > 0 && status === 'active') {
+        slot.classList.add("dealt");
+
+        if (i > 0 && status === "active") {
           break;
         }
-  
+
         const rank = dealer[i][0];
         const suit = lettersToSuits[dealer[i][1]];
         const card = rank + suit;
@@ -163,12 +143,10 @@ function handleBlackjackResponse(xhr) {
       const card = rank + suit;
       slot.innerText = card;
       slot.style.color = suitsToColors[suit];
-      slot.classList.add('dealt');
+      slot.classList.add("dealt");
     }
 
-    // Adjust available actions.
-    document.getElementById("casinoBlackjackBet").disabled = false;
-    document.getElementById("casinoBlackjackDeal").disabled = false;
+    updateBlackjackActions(state);
   } else {
     blackjackResult.style.display = "block";
     blackjackResult.innerText = response.error;
@@ -177,3 +155,98 @@ function handleBlackjackResponse(xhr) {
     console.error(response.error);
   }
 }
+
+function buildBlackjackAction(id, method, title) {
+  return `
+    <button
+      type="button"
+      class="btn btn-secondary lottery-page--action"
+      id="${id}"
+      onclick="${method}()"
+    >
+      ${title}
+    </button>
+  `;
+}
+
+function updateBlackjackActions(state) {
+  // Clear all actions first.
+  const actionWrapper = document.getElementById("casinoBlackjackActions");
+  actionWrapper.innerHTML = "";
+
+  if (state.status === "active") {
+    const actions = [];
+    const hit = buildBlackjackAction(
+      "casinoBlackjackHit",
+      "hitBlackjack",
+      "Hit"
+    );
+    const stay = buildBlackjackAction(
+      "casinoBlackjackStay",
+      "stayBlackjack",
+      "Stay"
+    );
+    const double = buildBlackjackAction(
+      "casinoBlackjackDouble",
+      "doubleBlackjack",
+      "Double Down"
+    );
+
+    actions.push(hit, stay, double);
+
+    if (state.dealer[0][0] === 'A' && !state.insured) {
+      const insure = buildBlackjackAction(
+        "casinoBlackjackInsure",
+        "insureBlackjack",
+        "Insure"
+      );
+
+      actions.push(insure);
+    }
+
+    actionWrapper.innerHTML = actions.join("\n");
+  } else {
+    // Game is over, deal a new game.
+    document.getElementById("casinoBlackjackWager").style.display = "block";
+
+    const deal = buildBlackjackAction(
+      "casinoBlackjackDeal",
+      "dealBlackjack",
+      "Deal"
+    );
+
+    actionWrapper.innerHTML = deal;
+  }
+}
+
+// == Blackjacktions
+function dealBlackjack() {
+  const wager = document.getElementById("casinoBlackjackBet").value;
+  const currency = document.querySelector(
+    'input[name="casinoBlackjackCurrency"]:checked'
+  ).value;
+
+  document.getElementById("casinoBlackjackBet").disabled = true;
+  document.getElementById("casinoBlackjackDeal").disabled = true;
+  document.getElementById("casinoBlackjackWager").style.display = "none";
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("post", "/casino/blackjack");
+  xhr.onload = handleBlackjackResponse.bind(null, xhr);
+
+  const form = new FormData();
+  form.append("formkey", formkey());
+  form.append("wager", wager);
+  form.append("currency", currency);
+
+  xhr.send(form);
+}
+
+function takeBlackjackAction(action) {
+  console.log("Going to ", action);
+}
+
+const hitBlackjack = takeBlackjackAction.bind(null, "hit");
+const stayBlackjack = takeBlackjackAction.bind(null, "stay");
+const doubleBlackjack = takeBlackjackAction.bind(null, "double");
+const insureBlackjack = takeBlackjackAction.bind(null, "insure");
