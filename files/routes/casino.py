@@ -1,3 +1,4 @@
+import json
 from files.__main__ import app
 from files.helpers.wrappers import *
 from files.helpers.alerts import *
@@ -61,3 +62,28 @@ def deal_blackjack(v):
         return { "game_state": game_state }
     else:
         return {"error": "Wager must be more than 100 {currency}."}
+
+@app.get("/casino/blackjack/<user_id>")
+@auth_required
+def get_player_blackjack_status(user_id, v):
+    game = get_player_active_blackjack_game(int(user_id))
+
+    if game:
+        parsed_state = json.loads(game.game_state)
+
+        for key, value in parsed_state.items() :
+            print (key, value)
+        
+        # Client doesn't need to know about dealer's second card or the rest of the deck.
+        safe_state = {
+            "player": parsed_state['player'],
+            "dealer": [parsed_state['dealer'][0], "??"],
+            "status": parsed_state['status'],
+            "insured": parsed_state['insured'],
+            "doubled_down": parsed_state['doubled_down'],
+        }
+
+        return {"active": True, "game_state": safe_state}
+    else:
+        return {"active": False}
+

@@ -84,9 +84,18 @@ function handleBlackjackResponse(xhr) {
   blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    const { game_state } = response;
-    const state = JSON.parse(game_state);
-    const { player, dealer, status, id } = state;
+    updateBlackjack(response.game_state);
+  } else {
+    blackjackResult.style.display = "block";
+    blackjackResult.innerText = response.error;
+    blackjackResult.classList.add("text-danger");
+
+    console.error(response.error);
+  }
+}
+
+function updateBlackjack(state) {
+    const { player, dealer, status } = state;
     const lettersToSuits = {
       S: "♠️",
       H: "♥️",
@@ -147,13 +156,6 @@ function handleBlackjackResponse(xhr) {
     }
 
     updateBlackjackActions(state);
-  } else {
-    blackjackResult.style.display = "block";
-    blackjackResult.innerText = response.error;
-    blackjackResult.classList.add("text-danger");
-
-    console.error(response.error);
-  }
 }
 
 function buildBlackjackAction(id, method, title) {
@@ -168,6 +170,7 @@ function buildBlackjackAction(id, method, title) {
     </button>
   `;
 }
+
 
 function updateBlackjackActions(state) {
   // Clear all actions first.
@@ -194,7 +197,7 @@ function updateBlackjackActions(state) {
 
     actions.push(hit, stay, double);
 
-    if (state.dealer[0][0] === 'A' && !state.insured) {
+    if (state.dealer[0][0] === "A" && !state.insured) {
       const insure = buildBlackjackAction(
         "casinoBlackjackInsure",
         "insureBlackjack",
@@ -250,3 +253,41 @@ const hitBlackjack = takeBlackjackAction.bind(null, "hit");
 const stayBlackjack = takeBlackjackAction.bind(null, "stay");
 const doubleBlackjack = takeBlackjackAction.bind(null, "double");
 const insureBlackjack = takeBlackjackAction.bind(null, "insure");
+
+// When the casino loads, look up the "blackjack status" of a player to either start a new game or continue an existing game.
+function checkBlackjackStatus() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("get", "/casino/blackjack/1");
+  xhr.onload = handleBlackjackStatusResponse.bind(null, xhr);
+  xhr.send();
+}
+
+function handleBlackjackStatusResponse(xhr) {
+  let response;
+
+  try {
+    response = JSON.parse(xhr.response);
+  } catch (error) {
+    console.error(error);
+  }
+
+  const succeeded =
+    xhr.status >= 200 && xhr.status < 300 && response && !response.error;
+
+  if (succeeded) {
+    if (response.active) {
+      updateBlackjack(response.game_state)
+    }
+  } else {
+    console.error("error");
+  }
+}
+
+if (
+  document.readyState === "complete" ||
+  (document.readyState !== "loading" && !document.documentElement.doScroll)
+) {
+  checkBlackjackStatus();
+} else {
+  document.addEventListener("DOMContentLoaded", checkBlackjackStatus);
+}

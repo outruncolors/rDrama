@@ -40,10 +40,10 @@ class Casino_Game(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     created_utc = Column(Integer)
     active = Column(Boolean, default=True)
-    currency = Column(Enum)
+    currency = Column(String)
     wager = Column(Integer)
     winnings = Column(Integer)
-    kind = Column(Enum)
+    kind = Column(String)
     game_state = Column(JSON)
 
     def __init__(self, *args, **kwargs):

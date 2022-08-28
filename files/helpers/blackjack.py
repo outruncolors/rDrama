@@ -271,13 +271,12 @@ def casino_deal_blackjack(gambler, wager_value, currency):
         # Persist game data here.
         casino_game = Casino_Game()
         initial_game_state = {
-			"id": casino_game.id,
             "player": player_hand,
             "dealer": dealer_hand,
-            "rest_of_deck": rest_of_deck,
             "status": status,
-			"insured": False,
-			"doubled_down": False
+            "insured": False,
+            "doubled_down": False,
+            "rest_of_deck": rest_of_deck
         }
         casino_game.user_id = gambler.id
         casino_game.currency = currency_prop
@@ -290,3 +289,10 @@ def casino_deal_blackjack(gambler, wager_value, currency):
         return True, casino_game.game_state
     else:
         return False, "{}"
+
+
+def get_player_active_blackjack_game(user_id):
+    return g.db.query(Casino_Game) \
+        .filter(Casino_Game.active and
+                Casino_Game.kind == 'blackjack' and
+                Casino_Game.user_id == user_id).first()
