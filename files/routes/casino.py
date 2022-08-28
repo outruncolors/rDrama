@@ -69,21 +69,32 @@ def get_player_blackjack_status(user_id, v):
     game = get_player_active_blackjack_game(int(user_id))
 
     if game:
-        parsed_state = json.loads(game.game_state)
-
-        for key, value in parsed_state.items() :
-            print (key, value)
-        
-        # Client doesn't need to know about dealer's second card or the rest of the deck.
-        safe_state = {
-            "player": parsed_state['player'],
-            "dealer": [parsed_state['dealer'][0], "??"],
-            "status": parsed_state['status'],
-            "insured": parsed_state['insured'],
-            "doubled_down": parsed_state['doubled_down'],
-        }
-
-        return {"active": True, "game_state": safe_state}
+        return {"active": True, "game_state": make_safe_blackjack_state(game.game_state)}
     else:
         return {"active": False}
 
+@app.post("/casino/blackjack/action")
+@auth_required
+def player_took_blackjack_action(v):
+    try:
+        action = request.values.get("action")
+    except:
+        return {"error": "Invalid action."}
+
+    game = get_player_active_blackjack_game(v.id)
+
+    if not game:
+        return {"error": "No game exists for player."}
+
+    if action == 'stay':
+        gambler_stayed(v)
+
+    game = get_player_active_blackjack_game(v.id)
+
+    if game.active:
+        return {"active": True, "game_state": make_safe_blackjack_state(game.game_state)}
+    else:
+        return {"active": False, "game_state": game.game_state}
+
+
+    

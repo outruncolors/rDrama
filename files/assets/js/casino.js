@@ -171,7 +171,6 @@ function buildBlackjackAction(id, method, title) {
   `;
 }
 
-
 function updateBlackjackActions(state) {
   // Clear all actions first.
   const actionWrapper = document.getElementById("casinoBlackjackActions");
@@ -246,7 +245,15 @@ function dealBlackjack() {
 }
 
 function takeBlackjackAction(action) {
-  console.log("Going to ", action);
+  const xhr = new XMLHttpRequest();
+  xhr.open("post", "/casino/blackjack/action");
+  xhr.onload = handleBlackjackResponse.bind(null, xhr);
+
+  const form = new FormData();
+  form.append("formkey", formkey());
+  form.append("action", action);
+
+  xhr.send(form);
 }
 
 const hitBlackjack = takeBlackjackAction.bind(null, "hit");

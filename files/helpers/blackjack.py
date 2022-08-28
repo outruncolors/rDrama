@@ -276,7 +276,9 @@ def casino_deal_blackjack(gambler, wager_value, currency):
             "status": status,
             "insured": False,
             "doubled_down": False,
-            "rest_of_deck": rest_of_deck
+            "rest_of_deck": rest_of_deck,
+            "currency": currency_prop,
+            "wager": wager_value
         }
         casino_game.user_id = gambler.id
         casino_game.currency = currency_prop
@@ -296,3 +298,67 @@ def get_player_active_blackjack_game(user_id):
         .filter(Casino_Game.active and
                 Casino_Game.kind == 'blackjack' and
                 Casino_Game.user_id == user_id).first()
+
+# Clients don't all need to know about dealer's second card or the rest of the deck.
+def make_safe_blackjack_state(raw_state):
+    state = json.loads(raw_state)
+
+    return {
+            "player": state['player'],
+            "dealer": [state['dealer'][0], "??"],
+            "status": state['status'],
+            "insured": state['insured'],
+            "doubled_down": state['doubled_down'],
+            "currency": state['currency'],
+            "wager": state['wager']
+        }
+
+def gambler_stayed(gambler):
+    game = get_player_active_blackjack_game(gambler.id)
+
+    if game:
+        state = json.loads(game.game_state)
+        player = state['player']
+        player_value = get_hand_value(player)
+        dealer = state['dealer']
+        dealer_value = get_hand_value(dealer)
+        deck = state['rest_of_deck']
+        currency_prop = state['currency']
+        wager_value = int(state['wager'])
+        insured = state['insured']
+        doubled_down = state['doubled_down']
+        status = state['status']
+
+        if dealer_value == 21 and insured:
+            apply_blackjack_result(gambler, wager_value, currency_prop, 'won')
+        else:
+            while dealer_value < 17 and dealer_value != -1:
+                next = deck.pop(0)
+                dealer.append(next)
+                dealer_value = get_hand_value(dealer)
+
+        if player_value > dealer_value or dealer_value == -1:
+            status = 'won'
+        elif dealer_value > player_value:
+            status = 'lost'
+        else:
+            status = 'push'
+
+        apply_blackjack_result(gambler, wager_value, currency_prop, status)
+
+        new_state = {
+            "player": player,
+            "dealer": dealer,
+            "status": status,
+            "insured": insured,
+            "doubled_down": doubled_down,
+            "rest_of_deck": deck,
+            "currency": currency_prop,
+            "wager": wager_value
+        }
+
+        game.game_state = json.dumps(new_state)
+        game.active = False
+        g.db.add(game)
+
+        return new_state
