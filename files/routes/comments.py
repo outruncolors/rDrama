@@ -617,11 +617,6 @@ def comment(v):
 		c.upvotes += 3
 		g.db.add(c)
 
-	if not v.rehab:
-		check_for_slots_command(body, v, c)
-
-		check_for_blackjack_commands(body, v, c)
-
 	if not c.slots_result and not c.blackjack_result and v.marseyawarded and parent_post.id not in ADMIGGERS and marseyaward_body_regex.search(body_html):
 		return {"error":"You can only type marseys!"}, 403
 

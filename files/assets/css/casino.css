@@ -1,9 +1,32 @@
+.casino-games {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.casino-game {
+  flex: 1;
+}
+
 /* Slots */
+.casino-slots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 418px;
+}
+
+.casino-slots-outcome {
+  visibility: hidden;
+  text-align: right;
+  margin-bottom: 1rem;
+}
+
 .casino-slots-results {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
-  margin-bottom: 1rem;
+  justify-content: center;
 }
 
 .casino-slots-results .reel {
@@ -19,9 +42,28 @@
   font-size: 64px;
 }
 
+.casino-slots-controls {
+  padding: 0.5rem;
+  max-width: 418px;
+}
+
 /* Blackjack */
-.casino-blackjack .blackjack-table {
+.casino-blackjack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 418px;
+}
+
+.casino-blackjack-outcome {
+  visibility: hidden;
+  text-align: right;
   margin-bottom: 1rem;
+}
+
+.blackjack-table {
+  max-width: 520px;
 }
 
 .casino-blackjack .blackjack-table .hand {
@@ -49,4 +91,9 @@
 
 .casino-blackjack-actions {
   text-align: right;
+}
+
+/* Lottery */
+.casino-lottery {
+  margin-top: 5rem;
 }

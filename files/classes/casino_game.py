@@ -4,7 +4,6 @@ from files.helpers.lazy import lazy
 from files.helpers.const import *
 import time
 
-
 # --
 # -- Name: casino_game_kind; Type: ENUM; Schema: public; Owner: -
 # --

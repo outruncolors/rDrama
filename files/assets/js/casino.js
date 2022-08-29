@@ -44,7 +44,7 @@ function handleSlotsResponse(xhr) {
       reels[i].innerHTML = symbols[i];
     }
 
-    slotsResult.style.display = "block";
+    slotsResult.style.visibility = "visible";
     slotsResult.innerText = state.text;
 
     if (state.text.includes("Won")) {
@@ -57,7 +57,7 @@ function handleSlotsResponse(xhr) {
       slotsResult.classList.add("text-danger");
     }
   } else {
-    slotsResult.style.display = "block";
+    slotsResult.style.visibility = "visible";
     slotsResult.innerText = response.error;
     slotsResult.classList.add("text-danger");
 
@@ -190,7 +190,7 @@ function revealBlackjackResult(state) {
   };
   const [resultText, resultClass] = lookup[state.status];
 
-  blackjackResult.style.display = "block";
+  blackjackResult.style.visibility = "visible";
   blackjackResult.innerText = resultText;
   blackjackResult.classList.add(`text-${resultClass}`);
 }
@@ -269,7 +269,7 @@ function dealBlackjack() {
   document.getElementById("casinoBlackjackBet").disabled = true;
   document.getElementById("casinoBlackjackDeal").disabled = true;
   document.getElementById("casinoBlackjackWager").style.display = "none";
-  document.getElementById("casinoBlackjackResult").style.display = "none";
+  document.getElementById("casinoBlackjackResult").style.visibility = "hidden";
 
   const xhr = new XMLHttpRequest();
   xhr.open("post", "/casino/blackjack");
@@ -319,7 +319,7 @@ function handleBlackjackResponse(xhr) {
       updateBlackjack(response.game_state);
     }
   } else {
-    blackjackResult.style.display = "block";
+    blackjackResult.style.visibility = "visible";
     blackjackResult.innerText = response.error;
     blackjackResult.classList.add("text-danger");
 
