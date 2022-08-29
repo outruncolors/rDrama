@@ -74,7 +74,7 @@ def deal_blackjack(v):
     if success:
         game, game_state = get_active_game(v)
 
-        if game.active:
+        if game and game.active:
             safe_state = get_safe_game_state(v)
             return {"game_state": safe_state}
         else:

@@ -165,9 +165,10 @@ def gambler_hit(gambler):
             save_game_state(game, game_state)
 
         if doubled_down or player_value == 21:
-            gambler_stayed(gambler)
-
-        return True, game_state
+            forced_stay_success, forced_stay_state = gambler_stayed(gambler)
+            return forced_stay_success, forced_stay_state
+        else:
+            return True, game_state
     else:
         return False, game_state
 
@@ -223,9 +224,11 @@ def gambler_doubled_down(gambler):
         game_state['doubled_down'] = True
         save_game_state(game, game_state)
 
-        gambler_hit(gambler)
+        g.db.flush()
 
-        return True, game_state
+        last_hit_success, last_hit_state = gambler_hit(gambler)
+
+        return last_hit_success, last_hit_state
     else:
         return False, game_state
 
@@ -238,10 +241,11 @@ def gambler_purchased_insurance(gambler):
         currency_value = getattr(gambler, game.currency, 0)
 
         if (currency_value < insurance_cost):
-            return False
+            return False, game_state
 
         setattr(gambler, game.currency, currency_value - insurance_cost)
         game_state['insurance'] = True
+        game_state['actions'] = determine_actions(game_state)
         save_game_state(game, game_state)
 
         return True, game_state

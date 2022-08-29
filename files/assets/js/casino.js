@@ -181,6 +181,7 @@ function updateBlackjack(state) {
 function revealBlackjackResult(state) {
   const blackjackResult = document.getElementById("casinoBlackjackResult");
   const lookup = {
+    bust: ["Bust. Didn't work out for you, did it?", "danger"],
     push: ["Pushed. This whole hand never happened.", "secondary"],
     insured_loss: ["Lost, but at least you had insurance.", "secondary"],
     lost: ["Lost. That was pathetic.", "danger"],
@@ -296,7 +297,7 @@ function takeBlackjackAction(action) {
 
 const hitBlackjack = takeBlackjackAction.bind(null, "hit");
 const stayBlackjack = takeBlackjackAction.bind(null, "stay");
-const doubleBlackjack = takeBlackjackAction.bind(null, "double");
+const doubleBlackjack = takeBlackjackAction.bind(null, "double_down");
 const insureBlackjack = takeBlackjackAction.bind(null, "insure");
 
 function handleBlackjackResponse(xhr) {
