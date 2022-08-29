@@ -22,6 +22,7 @@ def build_game(gambler, currency_kind, wager):
     casino_game.kind = 'blackjack'
     casino_game.game_state = json.dumps(build_initial_state())
     g.db.add(casino_game)
+    g.db.flush()
 
 
 def build_initial_state():
@@ -48,7 +49,7 @@ def save_game_state(game, new_state):
 
 def get_active_game(gambler):
     game = g.db.query(Casino_Game) \
-        .filter(Casino_Game.active and
+        .filter(Casino_Game.active == True and
                 Casino_Game.kind == 'blackjack' and
                 Casino_Game.user_id == gambler.id).first()
 
@@ -57,10 +58,11 @@ def get_active_game(gambler):
     else:
         return None, None
 
+
 def get_safe_game_state(gambler):
     game, game_state = get_active_game(gambler)
 
-    if game and game.active:
+    if game:
         return {
             "player": game_state['player'],
             "dealer": [game_state['dealer'][0], "?"],
@@ -72,27 +74,28 @@ def get_safe_game_state(gambler):
     else:
         return None
 
+
 def apply_blackjack_result(gambler):
     game, game_state = get_active_game(gambler)
 
     if game and game.active:
-        currency, wager = game
         result = game_state['status']
 
         if result == 'push' or result == 'insured_loss':
             reward = 0
         elif result == 'won':
-            reward = wager
+            reward = game.wager
         elif result == 'blackjack':
-            reward = floor(wager * 3/2)
+            reward = floor(game.wager * 3/2)
         else:
-            reward = -wager
+            reward = -game.wager
 
         gambler.winnings += reward
 
         if (reward > -1):
-            currency_value = int(getattr(gambler, currency, 0))
-            setattr(gambler, currency, currency_value + wager + reward)
+            currency_value = int(getattr(gambler, game.currency, 0))
+            setattr(gambler, game.currency,
+                    currency_value + game.wager + reward)
 
         game.active = False
         game.winnings = reward
@@ -117,6 +120,11 @@ def deal_blackjack_game(gambler, wager_value, currency):
         build_game(gambler, currency_prop, wager_value)
 
         game, game_state = get_active_game(gambler)
+
+        print('\n\n\n\n\n\n\n')
+        print('game', game)
+        print('\n\n\n\n\n\n\n')
+
         player_value = get_hand_value(game_state['player'])
         dealer_value = get_hand_value(game_state['dealer'])
 
@@ -156,6 +164,8 @@ def gambler_hit(gambler):
             game_state['status'] = 'won'
             save_game_state(game, game_state)
             apply_blackjack_result(gambler)
+        else:
+            save_game_state(game, game_state)
 
         if doubled_down or player_value == 21:
             gambler_stayed(gambler)
@@ -172,7 +182,7 @@ def gambler_stayed(gambler):
         player = game_state['player']
         dealer = game_state['dealer']
         deck = game_state['deck']
-        insured = game_state['insured']
+        insured = game_state['insurance']
 
         player_value = get_hand_value(player)
         dealer_value = get_hand_value(dealer)
@@ -206,13 +216,12 @@ def gambler_doubled_down(gambler):
     game, game_state = get_active_game(gambler.id)
 
     if game and not game_state['doubled_down']:
-        currency, wager = game
-        currency_value = getattr(gambler, currency, 0)
+        currency_value = getattr(gambler, game.currency, 0)
 
-        if (currency_value < wager):
+        if (currency_value < game.wager):
             return False
 
-        setattr(gambler, currency, currency_value - wager)
+        setattr(gambler, game.currency, currency_value - game.wager)
         game.wager *= 2
         game_state['doubled_down'] = True
         save_game_state(game, game_state)
@@ -228,14 +237,13 @@ def gambler_purchased_insurance(gambler):
     game, game_state = get_active_game(gambler.id)
 
     if game and not game_state['insurance']:
-        currency, wager = game
-        insurance_cost = wager / 2
-        currency_value = getattr(gambler, currency, 0)
+        insurance_cost = game.wager / 2
+        currency_value = getattr(gambler, game.currency, 0)
 
         if (currency_value < insurance_cost):
             return False
 
-        setattr(gambler, currency, currency_value - insurance_cost)
+        setattr(gambler, game.currency, currency_value - insurance_cost)
         game_state['insurance'] = True
         save_game_state(game, game_state)
 

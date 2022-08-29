@@ -99,9 +99,7 @@ function handleBlackjackStatusResponse(xhr) {
     xhr.status >= 200 && xhr.status < 300 && response && !response.error;
 
   if (succeeded) {
-    if (response.active) {
-      updateBlackjack(response.game_state)
-    }
+    updateBlackjack(response.game_state)
   } else {
     console.error("error");
   }
@@ -115,12 +113,14 @@ function updateBlackjack(state) {
     H: "♥️",
     C: "♣️",
     D: "♦️",
+    "?": "?"
   };
   const suitsToColors = {
     "♠️": "black",
     "♥️": "red",
     "♣️": "black",
     "♦️": "red",
+    "?": "black"
   };
 
   // Clear everything.
@@ -185,10 +185,15 @@ function buildBlackjackAction(id, method, title) {
   `;
 }
 
-function updateBlackjackActions(state) {
-  // Clear all actions first.
+function clearBlackjackActions() {
   const actionWrapper = document.getElementById("casinoBlackjackActions");
   actionWrapper.innerHTML = "";
+}
+
+function updateBlackjackActions(state) {
+  const actionWrapper = document.getElementById("casinoBlackjackActions");
+
+  clearBlackjackActions()
 
   if (state.status === "active") {
     const actionLookup = {
@@ -284,7 +289,12 @@ function handleBlackjackResponse(xhr) {
   blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    updateBlackjack(response.game_state);
+    if (response.active) {
+      updateBlackjack(response.game_state);
+    }
+
+    // Else: Need to get last good game to show here.
+
   } else {
     blackjackResult.style.display = "block";
     blackjackResult.innerText = response.error;
