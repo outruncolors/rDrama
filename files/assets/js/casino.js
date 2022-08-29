@@ -100,7 +100,7 @@ function handleBlackjackStatusResponse(xhr) {
 
   if (succeeded) {
     if (response.active) {
-      updateBlackjack(response.game_state)
+      updateBlackjack(response.game_state);
     }
   } else {
     console.error("error");
@@ -115,14 +115,14 @@ function updateBlackjack(state) {
     H: "♥️",
     C: "♣️",
     D: "♦️",
-    "?": "?"
+    "?": "?",
   };
   const suitsToColors = {
     "♠️": "black",
     "♥️": "red",
     "♣️": "black",
     "♦️": "red",
-    "?": "black"
+    "?": "black",
   };
 
   // Clear everything.
@@ -172,16 +172,38 @@ function updateBlackjack(state) {
   }
 
   updateBlackjackActions(state);
+
+  if (status !== "active") {
+    revealBlackjackResult(state);
+  }
+}
+
+function revealBlackjackResult(state) {
+  const blackjackResult = document.getElementById("casinoBlackjackResult");
+  const lookup = {
+    push: ["Pushed. This whole hand never happened.", "secondary"],
+    insured_loss: ["Lost, but at least you had insurance.", "secondary"],
+    lost: ["Lost. That was pathetic.", "danger"],
+    won: ["Won. This time.", "success"],
+    blackjack: ["Blackjack! Must be your lucky day.", "warning"],
+  };
+  const [resultText, resultClass] = lookup[state.status];
+
+  blackjackResult.style.display = "block";
+  blackjackResult.innerText = resultText;
+  blackjackResult.classList.add(`text-${resultClass}`);
 }
 
 function buildBlackjackAction(id, method, title, fullWidth = false) {
   return `
     <button
       type="button"
-      class="btn btn-${fullWidth ? 'primary' : 'secondary'} lottery-page--action"
+      class="btn btn-${
+        fullWidth ? "primary" : "secondary"
+      } lottery-page--action"
       id="${id}"
       onclick="${method}()"
-      style="${fullWidth ? 'width: 100%;' : ''}"
+      style="${fullWidth ? "width: 100%;" : ""}"
     >
       ${title}
     </button>
@@ -196,34 +218,30 @@ function clearBlackjackActions() {
 function updateBlackjackActions(state) {
   const actionWrapper = document.getElementById("casinoBlackjackActions");
 
-  clearBlackjackActions()
+  clearBlackjackActions();
 
   if (state.status === "active") {
-    document.getElementById("casinoBlackjackWager").style.display = "none";    
+    document.getElementById("casinoBlackjackWager").style.display = "none";
 
     const actionLookup = {
-      'hit': buildBlackjackAction(
-        "casinoBlackjackHit",
-        "hitBlackjack",
-        "Hit"
-      ),
-      'stay': buildBlackjackAction(
+      hit: buildBlackjackAction("casinoBlackjackHit", "hitBlackjack", "Hit"),
+      stay: buildBlackjackAction(
         "casinoBlackjackStay",
         "stayBlackjack",
         "Stay"
       ),
-      'double_down': buildBlackjackAction(
+      double_down: buildBlackjackAction(
         "casinoBlackjackDouble",
         "doubleBlackjack",
         "Double Down"
       ),
-      'insure': buildBlackjackAction(
+      insure: buildBlackjackAction(
         "casinoBlackjackInsure",
         "insureBlackjack",
         "Insure"
-      )
-    }
-    const actions = state.actions.map(action => actionLookup[action]);
+      ),
+    };
+    const actions = state.actions.map((action) => actionLookup[action]);
 
     actionWrapper.innerHTML = actions.join("\n");
   } else {
@@ -250,6 +268,7 @@ function dealBlackjack() {
   document.getElementById("casinoBlackjackBet").disabled = true;
   document.getElementById("casinoBlackjackDeal").disabled = true;
   document.getElementById("casinoBlackjackWager").style.display = "none";
+  document.getElementById("casinoBlackjackResult").style.display = "none";
 
   const xhr = new XMLHttpRequest();
   xhr.open("post", "/casino/blackjack");
@@ -298,8 +317,6 @@ function handleBlackjackResponse(xhr) {
     if (response.game_state) {
       updateBlackjack(response.game_state);
     }
-    // if (response.active) {
-    // }
   } else {
     blackjackResult.style.display = "block";
     blackjackResult.innerText = response.error;
