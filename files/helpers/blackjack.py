@@ -57,6 +57,20 @@ def get_active_game(gambler):
     else:
         return None, None
 
+def get_safe_game_state(gambler):
+    game, game_state = get_active_game(gambler)
+
+    if game and game.active:
+        return {
+            "player": game_state['player'],
+            "dealer": [game_state['dealer'][0], "?"],
+            "actions": game_state['actions'],
+            "insurance": game_state['insurance'],
+            "doubled_down": game_state['doubled_down'],
+            "status": game_state['status']
+        }
+    else:
+        return None
 
 def apply_blackjack_result(gambler):
     game, game_state = get_active_game(gambler)
@@ -85,7 +99,7 @@ def apply_blackjack_result(gambler):
         g.db.add(game)
 
 
-def casino_deal_blackjack(gambler, wager_value, currency):
+def deal_blackjack_game(gambler, wager_value, currency):
     over_min = wager_value >= minimum_bet
     under_max = wager_value <= maximum_bet
     using_dramacoin = currency == "dramacoin"
@@ -157,7 +171,7 @@ def gambler_stayed(gambler):
     if game:
         player = game_state['player']
         dealer = game_state['dealer']
-        deck = game_state['rest_of_deck']
+        deck = game_state['deck']
         insured = game_state['insured']
 
         player_value = get_hand_value(player)

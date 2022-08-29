@@ -36,9 +36,19 @@ def pull_slots(v):
     success, game_state = casino_slot_pull(v, wager, currency)
 
     if success:
-        return { "game_state": game_state }
+        return {"game_state": game_state}
     else:
         return {"error": "Wager must be more than 100 {currency}."}
+
+@app.get("/casino/blackjack")
+@auth_required
+def get_player_blackjack_status(v):
+    game_state = get_safe_game_state(v)
+
+    if game_state is not None:
+        return {"active": True, "game_state": game_state}
+    else:
+        return {"active": False}
 
 @app.post("/casino/blackjack")
 @auth_required
@@ -55,23 +65,21 @@ def deal_blackjack(v):
 
     if (currency == "dramacoin" and wager > v.coins) or (currency == "marseybux" and wager > v.procoins):
         return {"error": f"Not enough {currency} to make that bet."}
-    
-    success, game_state = casino_deal_blackjack(v, wager, currency)
+
+    game = get_active_game(v)
+
+    if game:
+        return {"error": "This play is already playing a game."}
+
+    success = deal_blackjack_game(v, wager, currency)
 
     if success:
-        return { "game_state": game_state }
+        game_state = get_safe_game_state(v)
+
+        return {"game_state": game_state}
     else:
         return {"error": "Wager must be more than 100 {currency}."}
 
-@app.get("/casino/blackjack/<user_id>")
-@auth_required
-def get_player_blackjack_status(user_id, v):
-    game = get_player_active_blackjack_game(int(user_id))
-
-    if game:
-        return {"active": True, "game_state": make_safe_blackjack_state(game.game_state)}
-    else:
-        return {"active": False}
 
 @app.post("/casino/blackjack/action")
 @auth_required
@@ -81,20 +89,23 @@ def player_took_blackjack_action(v):
     except:
         return {"error": "Invalid action."}
 
-    game = get_player_active_blackjack_game(v.id)
+    game_state = get_safe_game_state(v)
 
-    if not game:
+    if not game_state:
         return {"error": "No game exists for player."}
 
-    if action == 'stay':
+    elif action == 'hit':
+        gambler_hit(v)
+    elif action == 'stay':
         gambler_stayed(v)
+    elif action == 'double_down':
+        gambler_doubled_down(v)
+    elif action == 'insure':
+        gambler_purchased_insurance(v)
 
-    game = get_player_active_blackjack_game(v.id)
+    game_state = get_safe_game_state(v)
 
-    if game.active:
-        return {"active": True, "game_state": make_safe_blackjack_state(game.game_state)}
+    if game_state:
+        return {"active": True, "game_state": game_state}
     else:
-        return {"active": False, "game_state": game.game_state}
-
-
-    
+        return {"active": False}

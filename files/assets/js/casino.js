@@ -69,7 +69,24 @@ function handleSlotsResponse(xhr) {
 }
 
 // Blackjack
-function handleBlackjackResponse(xhr) {
+// When the casino loads, look up the "blackjack status" of a player to either start a new game or continue an existing game.
+if (
+  document.readyState === "complete" ||
+  (document.readyState !== "loading" && !document.documentElement.doScroll)
+) {
+  checkBlackjackStatus();
+} else {
+  document.addEventListener("DOMContentLoaded", checkBlackjackStatus);
+}
+
+function checkBlackjackStatus() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("get", "/casino/blackjack");
+  xhr.onload = handleBlackjackStatusResponse.bind(null, xhr);
+  xhr.send();
+}
+
+function handleBlackjackStatusResponse(xhr) {
   let response;
 
   try {
@@ -80,82 +97,79 @@ function handleBlackjackResponse(xhr) {
 
   const succeeded =
     xhr.status >= 200 && xhr.status < 300 && response && !response.error;
-  const blackjackResult = document.getElementById("casinoBlackjackResult");
-  blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    updateBlackjack(response.game_state);
+    if (response.active) {
+      updateBlackjack(response.game_state)
+    }
   } else {
-    blackjackResult.style.display = "block";
-    blackjackResult.innerText = response.error;
-    blackjackResult.classList.add("text-danger");
-
-    console.error(response.error);
+    console.error("error");
   }
 }
 
+// When starting a new game or taking an action in an existing one, a new state will be returned, and the DOM must be updated.
 function updateBlackjack(state) {
-    const { player, dealer, status } = state;
-    const lettersToSuits = {
-      S: "♠️",
-      H: "♥️",
-      C: "♣️",
-      D: "♦️",
-    };
-    const suitsToColors = {
-      "♠️": "black",
-      "♥️": "red",
-      "♣️": "black",
-      "♦️": "red",
-    };
+  const { player, dealer, status } = state;
+  const lettersToSuits = {
+    S: "♠️",
+    H: "♥️",
+    C: "♣️",
+    D: "♦️",
+  };
+  const suitsToColors = {
+    "♠️": "black",
+    "♥️": "red",
+    "♣️": "black",
+    "♦️": "red",
+  };
 
-    // Clear everything.
-    Array.from(document.querySelectorAll(".playing-card")).forEach((card) => {
-      card.innerText = "";
-      card.style.color = "unset";
-      card.classList.remove("dealt");
-    });
+  // Clear everything.
+  Array.from(document.querySelectorAll(".playing-card")).forEach((card) => {
+    card.innerText = "";
+    card.style.color = "unset";
+    card.classList.remove("dealt");
+  });
 
-    // Show dealer cards.
-    const dealerSlots = Array.from(
-      document.querySelectorAll('.playing-card[data-who="dealer"]')
-    );
-    for (let i = 0; i < dealer.length; i++) {
-      const slot = dealerSlots[i];
+  // Show dealer cards.
+  const dealerSlots = Array.from(
+    document.querySelectorAll('.playing-card[data-who="dealer"]')
+  );
+  for (let i = 0; i < dealer.length; i++) {
+    const slot = dealerSlots[i];
 
-      if (slot) {
-        // Technically, the dealer can use more than 5 cards, though it's rare.
-        // In that case, the result message is good enough.
-        // Thanks, Carp. 🐠
-        slot.classList.add("dealt");
+    if (slot) {
+      // Technically, the dealer can use more than 5 cards, though it's rare.
+      // In that case, the result message is good enough.
+      // Thanks, Carp. 🐠
+      slot.classList.add("dealt");
 
-        if (i > 0 && status === "active") {
-          break;
-        }
-
-        const rank = dealer[i][0];
-        const suit = lettersToSuits[dealer[i][1]];
-        const card = rank + suit;
-        slot.innerText = card;
-        slot.style.color = suitsToColors[suit];
+      if (i > 0 && status === "active") {
+        break;
       }
-    }
 
-    // Show player cards.
-    const playerSlots = Array.from(
-      document.querySelectorAll('.playing-card[data-who="player"]')
-    );
-    for (let i = 0; i < player.length; i++) {
-      const slot = playerSlots[i];
-      const rank = player[i][0];
-      const suit = lettersToSuits[player[i][1]];
+      const rank = dealer[i][0];
+      const suit = lettersToSuits[dealer[i][1]];
       const card = rank + suit;
       slot.innerText = card;
       slot.style.color = suitsToColors[suit];
-      slot.classList.add("dealt");
     }
+  }
 
-    updateBlackjackActions(state);
+  // Show player cards.
+  const playerSlots = Array.from(
+    document.querySelectorAll('.playing-card[data-who="player"]')
+  );
+  for (let i = 0; i < player.length; i++) {
+    const slot = playerSlots[i];
+    const rank = player[i][0];
+    const suit = lettersToSuits[player[i][1]];
+    const card = rank + suit;
+    slot.innerText = card;
+    slot.style.color = suitsToColors[suit];
+    slot.classList.add("dealt");
+  }
+
+  updateBlackjackActions(state);
 }
 
 function buildBlackjackAction(id, method, title) {
@@ -177,34 +191,29 @@ function updateBlackjackActions(state) {
   actionWrapper.innerHTML = "";
 
   if (state.status === "active") {
-    const actions = [];
-    const hit = buildBlackjackAction(
-      "casinoBlackjackHit",
-      "hitBlackjack",
-      "Hit"
-    );
-    const stay = buildBlackjackAction(
-      "casinoBlackjackStay",
-      "stayBlackjack",
-      "Stay"
-    );
-    const double = buildBlackjackAction(
-      "casinoBlackjackDouble",
-      "doubleBlackjack",
-      "Double Down"
-    );
-
-    actions.push(hit, stay, double);
-
-    if (state.dealer[0][0] === "A" && !state.insured) {
-      const insure = buildBlackjackAction(
+    const actionLookup = {
+      'hit': buildBlackjackAction(
+        "casinoBlackjackHit",
+        "hitBlackjack",
+        "Hit"
+      ),
+      'stay': buildBlackjackAction(
+        "casinoBlackjackStay",
+        "stayBlackjack",
+        "Stay"
+      ),
+      'double_down': buildBlackjackAction(
+        "casinoBlackjackDouble",
+        "doubleBlackjack",
+        "Double Down"
+      ),
+      'insure': buildBlackjackAction(
         "casinoBlackjackInsure",
         "insureBlackjack",
         "Insure"
-      );
-
-      actions.push(insure);
+      )
     }
+    const actions = state.actions.map(action => actionLookup[action]);
 
     actionWrapper.innerHTML = actions.join("\n");
   } else {
@@ -221,7 +230,6 @@ function updateBlackjackActions(state) {
   }
 }
 
-// == Blackjacktions
 function dealBlackjack() {
   const wager = document.getElementById("casinoBlackjackBet").value;
   const currency = document.querySelector(
@@ -261,15 +269,7 @@ const stayBlackjack = takeBlackjackAction.bind(null, "stay");
 const doubleBlackjack = takeBlackjackAction.bind(null, "double");
 const insureBlackjack = takeBlackjackAction.bind(null, "insure");
 
-// When the casino loads, look up the "blackjack status" of a player to either start a new game or continue an existing game.
-function checkBlackjackStatus() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("get", "/casino/blackjack/1");
-  xhr.onload = handleBlackjackStatusResponse.bind(null, xhr);
-  xhr.send();
-}
-
-function handleBlackjackStatusResponse(xhr) {
+function handleBlackjackResponse(xhr) {
   let response;
 
   try {
@@ -280,21 +280,16 @@ function handleBlackjackStatusResponse(xhr) {
 
   const succeeded =
     xhr.status >= 200 && xhr.status < 300 && response && !response.error;
+  const blackjackResult = document.getElementById("casinoBlackjackResult");
+  blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    if (response.active) {
-      updateBlackjack(response.game_state)
-    }
+    updateBlackjack(response.game_state);
   } else {
-    console.error("error");
-  }
-}
+    blackjackResult.style.display = "block";
+    blackjackResult.innerText = response.error;
+    blackjackResult.classList.add("text-danger");
 
-if (
-  document.readyState === "complete" ||
-  (document.readyState !== "loading" && !document.documentElement.doScroll)
-) {
-  checkBlackjackStatus();
-} else {
-  document.addEventListener("DOMContentLoaded", checkBlackjackStatus);
+    console.error(response.error);
+  }
 }
