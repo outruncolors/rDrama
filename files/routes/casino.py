@@ -40,6 +40,7 @@ def pull_slots(v):
     else:
         return {"error": "Wager must be more than 100 {currency}."}
 
+
 @app.get("/casino/blackjack")
 @auth_required
 def get_player_blackjack_status(v):
@@ -50,6 +51,7 @@ def get_player_blackjack_status(v):
         return {"active": True, "game_state": safe_state}
     else:
         return {"active": False, "game_state": game_state}
+
 
 @app.post("/casino/blackjack")
 @auth_required
@@ -90,25 +92,27 @@ def player_took_blackjack_action(v):
     except:
         return {"error": "Invalid action."}
 
-    game_state = get_safe_game_state(v)
+    was_successful = False
+    state = None
 
-    if not game_state:
-        return {"error": "No game exists for player."}
-
-    elif action == 'hit':
-        gambler_hit(v)
+    if action == 'hit':
+        success, game_state = gambler_hit(v)
+        was_successful = success
+        state = game_state
     elif action == 'stay':
-        gambler_stayed(v)
+        success, game_state = gambler_stayed(v)
+        was_successful = success
+        state = game_state
     elif action == 'double_down':
-        gambler_doubled_down(v)
+        success, game_state = gambler_doubled_down(v)
+        was_successful = success
+        state = game_state
     elif action == 'insure':
-        gambler_purchased_insurance(v)
+        success, game_state = gambler_purchased_insurance(v)
+        was_successful = success
+        state = game_state
 
-    g.db.flush()
-
-    game_state = get_safe_game_state(v)
-
-    if game_state:
-        return {"active": True, "game_state": game_state}
+    if was_successful:
+        return {"active": True, "game_state": state}
     else:
-        return {"active": False, "game_state": game_state}
+        return {"active": False, "game_state": None}

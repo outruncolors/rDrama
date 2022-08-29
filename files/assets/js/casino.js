@@ -99,7 +99,9 @@ function handleBlackjackStatusResponse(xhr) {
     xhr.status >= 200 && xhr.status < 300 && response && !response.error;
 
   if (succeeded) {
-    updateBlackjack(response.game_state)
+    if (response.active) {
+      updateBlackjack(response.game_state)
+    }
   } else {
     console.error("error");
   }
@@ -172,13 +174,14 @@ function updateBlackjack(state) {
   updateBlackjackActions(state);
 }
 
-function buildBlackjackAction(id, method, title) {
+function buildBlackjackAction(id, method, title, fullWidth = false) {
   return `
     <button
       type="button"
-      class="btn btn-secondary lottery-page--action"
+      class="btn btn-${fullWidth ? 'primary' : 'secondary'} lottery-page--action"
       id="${id}"
       onclick="${method}()"
+      style="${fullWidth ? 'width: 100%;' : ''}"
     >
       ${title}
     </button>
@@ -196,6 +199,8 @@ function updateBlackjackActions(state) {
   clearBlackjackActions()
 
   if (state.status === "active") {
+    document.getElementById("casinoBlackjackWager").style.display = "none";    
+
     const actionLookup = {
       'hit': buildBlackjackAction(
         "casinoBlackjackHit",
@@ -223,12 +228,13 @@ function updateBlackjackActions(state) {
     actionWrapper.innerHTML = actions.join("\n");
   } else {
     // Game is over, deal a new game.
-    document.getElementById("casinoBlackjackWager").style.display = "block";
+    document.getElementById("casinoBlackjackWager").style.display = "flex";
 
     const deal = buildBlackjackAction(
       "casinoBlackjackDeal",
       "dealBlackjack",
-      "Deal"
+      "Deal",
+      true
     );
 
     actionWrapper.innerHTML = deal;
@@ -289,12 +295,11 @@ function handleBlackjackResponse(xhr) {
   blackjackResult.classList.remove("text-success", "text-danger");
 
   if (succeeded) {
-    if (response.active) {
+    if (response.game_state) {
       updateBlackjack(response.game_state);
     }
-
-    // Else: Need to get last good game to show here.
-
+    // if (response.active) {
+    // }
   } else {
     blackjackResult.style.display = "block";
     blackjackResult.innerText = response.error;

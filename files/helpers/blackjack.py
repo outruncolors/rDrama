@@ -120,11 +120,6 @@ def deal_blackjack_game(gambler, wager_value, currency):
         build_game(gambler, currency_prop, wager_value)
 
         game, game_state = get_active_game(gambler)
-
-        print('\n\n\n\n\n\n\n')
-        print('game', game)
-        print('\n\n\n\n\n\n\n')
-
         player_value = get_hand_value(game_state['player'])
         dealer_value = get_hand_value(game_state['dealer'])
 
@@ -136,6 +131,8 @@ def deal_blackjack_game(gambler, wager_value, currency):
             game_state["status"] = 'blackjack'
             save_game_state(game, game_state)
             apply_blackjack_result(gambler)
+
+        g.db.flush()
 
         return True
     else:
@@ -170,9 +167,9 @@ def gambler_hit(gambler):
         if doubled_down or player_value == 21:
             gambler_stayed(gambler)
 
-        return True
+        return True, game_state
     else:
-        return False
+        return False, game_state
 
 
 def gambler_stayed(gambler):
@@ -207,9 +204,9 @@ def gambler_stayed(gambler):
         save_game_state(game, game_state)
         apply_blackjack_result(gambler)
 
-        return True
+        return True, game_state
     else:
-        return False
+        return False, game_state
 
 
 def gambler_doubled_down(gambler):
@@ -228,9 +225,9 @@ def gambler_doubled_down(gambler):
 
         gambler_hit(gambler)
 
-        return True
+        return True, game_state
     else:
-        return False
+        return False, game_state
 
 
 def gambler_purchased_insurance(gambler):
@@ -247,9 +244,9 @@ def gambler_purchased_insurance(gambler):
         game_state['insurance'] = True
         save_game_state(game, game_state)
 
-        return True
+        return True, game_state
     else:
-        return False
+        return False, game_state
 
 # endregion
 
@@ -264,7 +261,7 @@ def shuffle(x):
 def determine_actions(state):
     actions = ['hit', 'stay', 'double_down']
 
-    if (state['dealer'][0][0] == "A" and not state['insured']):
+    if (state['dealer'][0][0] == "A" and not state['insurance']):
         actions.append('insure')
 
     return actions
