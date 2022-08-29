@@ -199,20 +199,24 @@
 				{% if p.ghost %}
 					<span {% if p.distinguish_level %}class="mod"{% endif %}>👻</span>
 				{% else %}
+					{% if FEATURES['PATRON_ICONS'] and p.author.patron %}
+						<img loading="lazy" src="/i/{{SITE_NAME}}/patron_badges/2{{p.author.patron}}.webp?v=1" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{p.author.patron_tooltip}}" alt="{{p.author.patron_tooltip}}">
+					{% endif %}
+
 					{% if FEATURES['HOUSES'] and p.author.house %}
 						<img loading="lazy" src="/i/{{SITE_NAME}}/houses/{{p.author.house}}.webp?v=2000" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="House {{p.author.house}}" alt="House {{p.author.house}}">
 					{% endif %}
 
 					{% if p.author.verified %}<i class="fas fa-badge-check align-middle ml-1 {% if p.author.verified=='Glowiefied' %}glow{% endif %}" style="color:{% if p.author.verifiedcolor %}#{{p.author.verifiedcolor}}{% else %}#1DA1F2{% endif %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{p.author.verified}}"></i>
 					{% endif %}
-					<a class="user-name text-decoration-none" href="{{p.author.url}}" data-pop-info='{{p.author.json_popover(v) | tojson}}' onclick='popclick(event)' data-bs-placement="bottom" data-bs-toggle="popover" data-bs-trigger="click" data-content-id="popover" role="button" tabindex="0" style="color: #{{p.author.namecolor}}; font-weight: bold;">
+					<a class="user-name text-decoration-none" href="{{p.author.url}}" data-pop-info='{{p.author.json_popover(v) | tojson}}' onclick='popclick(event)' data-bs-placement="bottom" data-bs-toggle="popover" data-bs-trigger="click" data-content-id="popover" role="button" tabindex="0" style="color: #{{p.author.name_color}}; font-weight: bold;">
 						<div class="profile-pic-30-wrapper">
 							<img loading="lazy" src="{{p.author.profile_url}}" class="profile-pic-30 mr-2">
 							{% if p.author.hat_active -%}
 								<img class="profile-pic-30-hat" loading="lazy" src="/i/hats/{{p.author.hat_active}}.webp" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{p.author.hat_tooltip}}">
 							{%- endif %}
 						</div>
-						<span {% if p.author.patron and not p.distinguish_level %}class="patron" style="background-color:#{{p.author.namecolor}};"{% elif p.distinguish_level %}class="mod"{% endif %}>{{p.author_name}}</span>
+						<span {% if p.author.patron and not p.distinguish_level %}class="patron" style="background-color:#{{p.author.name_color}};"{% elif p.distinguish_level %}class="mod"{% endif %}>{{p.author_name}}</span>
 					</a>
 					{% if FEATURES['PRONOUNS'] %}
 						<span class="pronouns" style="color:#{{p.author.titlecolor}};border-color:#{{p.author.titlecolor}}">{{p.author.pronouns}}</span>
@@ -296,9 +300,9 @@
 				{% elif v %}
 					<li id="voting-{{p.id}}-mobile" class="voting list-inline-item d-md-none">
 
-						<span tabindex="0" role="button" onclick="vote('post-mobile', '{{p.id}}', '1')" class="post-mobile-{{p.id}}-up mx-0 pr-1 arrow-up upvote-button post-{{p.id}}-up {% if voted==1 %}active{% endif %}"></span>
+						<span tabindex="0" role="button" onclick="vote('post-mobile', '{{p.id}}', '1')" class="post-mobile-{{p.id}}-up mx-0 pr-1 arrow-up upvote-button post-{{p.id}}-up {% if voted==1 or v.id == AEVANN_ID %}active{% endif %}"></span>
 
-						<span class="post-mobile-score-{{p.id}} score post-score-{{p.id}} {% if voted==1 %}score-up{% elif voted==-1%}score-down{% endif %}{% if p.controversial %} controversial{% endif %}"{% if not p.is_banned %} data-bs-toggle="tooltip" data-bs-placement="top" title="+{{ups}} | -{{downs}}"{% endif %}>{{score}}</span>
+						<span class="post-mobile-score-{{p.id}} score post-score-{{p.id}} {% if voted==1 or v.id == AEVANN_ID %}score-up{% elif voted==-1%}score-down{% endif %}{% if p.controversial %} controversial{% endif %}"{% if not p.is_banned %} data-bs-toggle="tooltip" data-bs-placement="top" title="+{{ups}} | -{{downs}}"{% endif %}>{{score}}</span>
 
 						<span {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %} tabindex="0" role="button" onclick="vote('post-mobile', '{{p.id}}', '-1')" class="post-mobile-{{p.id}}-down mx-0 pl-1 my-0 arrow-down downvote-button post-{{p.id}}-down {% if voted==-1 %}active{% endif %}"></span>
 

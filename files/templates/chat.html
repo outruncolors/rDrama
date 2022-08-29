@@ -58,12 +58,17 @@
 			border-radius: 3px;
 		}
 
-		p, h1 {
+		p, h1, h2, h3, h4, h5 {
 			display: inherit;
 		}
 
 		blockquote + :not(blockquote) {
 			display: inline-block;
+			margin-top: 0.5rem;
+		}
+
+		blockquote {
+			margin-top: 0.5rem;
 		}
 
 		.diff {
@@ -136,6 +141,7 @@
 							<div>
 								<img class="avatar pp20 mr-1" data-toggle="tooltip" data-placement="right">
 								<a href="" class="font-weight-bold text-black userlink" target="_blank"></a>
+								<span class="text-black time ml-2 d-none">just now</span>
 								<div class="cdiv">
 									<span class="chat-message text-black text-break"></span>
 									<span class="text d-none"></span>
@@ -163,7 +169,7 @@
 										<a class="{% if same %}d-none{% endif %} font-weight-bold text-black userlink" style="color:#{{m['namecolor']}}" target="_blank" href="/@{{m['username']}}">{{m['username']}}</a>
 
 										{% if not same %}
-											<span class="text-black time ml-2">{{m['time'] | timestamp}}</a>
+											<span class="text-black time ml-2">{{m['time'] | timestamp}}</span>
 										{% endif %}
 
 										<div class="cdiv">
@@ -183,8 +189,8 @@
 						<span id="typing-indicator"></span>
 						<span id="loading-indicator" class="d-none"></span>
 					</div>
-					<i class="btn btn-secondary mr-2 fas fa-smile-beam" style="padding-top:0.65rem" onclick="loadEmojis('input-text')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-placement="bottom" title="Add Emoji"></i>
-					<textarea id="input-text" minlength="1" maxlength="{% if SITE == 'rdrama.net' %}200{% else %}1000{% endif %}" type="text" class="form-control" placeholder="Message" autocomplete="off" autofocus rows="1"></textarea>
+					<i class="btn btn-secondary mr-2 fas fa-kiss-wink-heart" style="padding-top:0.65rem" onclick="loadEmojis('input-text')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-placement="bottom" title="Add Emoji"></i>
+					<textarea onclick="scroll_chat()" id="input-text" minlength="1" maxlength="{% if SITE == 'rdrama.net' %}200{% else %}1000{% endif %}" style="font-size:16px!important" class="form-control" placeholder="Message" autocomplete="off" autofocus rows="1"></textarea>
 					<button id="chatsend" onclick="send()" class="btn btn-primary ml-3" type="submit" onclick="disable(this)">Send</button>
 				</div>
 			</div>
@@ -199,6 +205,7 @@
 </div>
 
 <input id="vid" type="hidden" value="{{v.id}}">
+<input id="vusername" type="hidden" value="{{v.username}}">
 <input id="site_name" type="hidden" value="{{SITE_NAME}}">
 <input id="slurreplacer" type="hidden" value="{{v.slurreplacer}}">
 
@@ -207,7 +214,6 @@
 
 <script src="{{asset('js/lozad.js')}}"></script>
 <script src="/assets/js/lite-youtube.js?v=241"></script>
-
-<script src="/chat.js?v=3009"></script>
+<script src="/chat.js?v=3043"></script>
 
 </body>

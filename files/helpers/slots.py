@@ -19,7 +19,6 @@ payout_to_symbols = {
     12: ["🐱"]
 }
 
-
 def shuffle(stuff):
     random.shuffle(stuff)
     return stuff

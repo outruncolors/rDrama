@@ -12,9 +12,18 @@ import sys
 import atexit
 
 if SITE == 'localhost':
-	socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins=[SITE_FULL], logger=True, engineio_logger=True, debug=True)
+	socketio = SocketIO(
+		app,
+		async_mode='gevent',
+		logger=True,
+		engineio_logger=True,
+		debug=True
+	)
 else:
-	socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins=[SITE_FULL])
+	socketio = SocketIO(
+		app,
+		async_mode='gevent',
+	)
 
 typing = []
 online = []
@@ -71,7 +80,6 @@ def speak(data, v):
 		emit('speak', data)
 		v.shadowbanned = 'AutoJanny'
 		g.db.add(v)
-		send_repeatable_notification(CARP_ID, f"{v.username} has been shadowbanned because of a chat message.")
 		send_repeatable_notification(CARP_ID, f"{v.username} has been shadowbanned because of a chat message.")
 	else:
 		emit('speak', data, broadcast=True)

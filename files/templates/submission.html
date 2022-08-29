@@ -612,7 +612,7 @@
 	<div id="post-root" class="col-12">
 
 		<div class="card border-0 mt-3{% if p.is_banned %} banned{% endif %}{% if p.stickied %} stickied{% endif %}{% if voted==1 %} upvoted{% elif voted==-1 %} downvoted{% endif %}">
-			<div id="post-{{p.id}}" class="{% if p.award_count('tilt', v) %}p-3{% endif %} {% if p.award_count('glowie', v) %}glow{% endif %} {% if p.deleted_utc %}deleted {% endif %}d-flex flex-row-reverse flex-nowrap justify-content-end">
+			<div id="post-{{p.id}}" class="{% if p.award_count('tilt', v) %}p-3{% endif %} {% if p.award_count('glowie', v) and not p.distinguish_level %}glow{% endif %} {% if p.deleted_utc %}deleted {% endif %}d-flex flex-row-reverse flex-nowrap justify-content-end">
 
 				{% if not p.is_image and p.thumb_url and not p.embed_url %}
 				<div class="card-header bg-transparent border-0 d-none d-md-flex flex-row flex-nowrap pl-3 p-0">
@@ -663,20 +663,24 @@
 						{% if p.ghost %}
 							<span {% if p.distinguish_level %}class="mod"{% endif %}>👻</span>
 						{% else %}
+							{% if FEATURES['PATRON_ICONS'] and p.author.patron %}
+								<img loading="lazy" src="/i/{{SITE_NAME}}/patron_badges/2{{p.author.patron}}.webp?v=1" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{p.author.patron_tooltip}}" alt="{{p.author.patron_tooltip}}">
+							{% endif %}
+
 							{% if FEATURES['HOUSES'] and p.author.house %}
 								<img loading="lazy" src="/i/{{SITE_NAME}}/houses/{{p.author.house}}.webp?v=2000" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="House {{p.author.house}}" alt="House {{p.author.house}}">
 							{% endif %}
 
 							{% if p.author.verified %}<i class="fas fa-badge-check align-middle ml-1 {% if p.author.verified=='Glowiefied' %}glow{% endif %}" style="color:{% if p.author.verifiedcolor %}#{{p.author.verifiedcolor}}{% else %}#1DA1F2{% endif %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{p.author.verified}}"></i>
 							{% endif %}
-							<a class="user-name text-decoration-none" href="{{p.author.url}}" data-pop-info='{{p.author.json_popover(v) | tojson}}' onclick='popclick(event)' data-bs-placement="bottom" data-bs-toggle="popover" data-bs-trigger="click" data-content-id="popover" role="button" tabindex="0" style="color: #{{p.author.namecolor}}; font-weight: bold"class="user-name">
+							<a class="user-name text-decoration-none" href="{{p.author.url}}" data-pop-info='{{p.author.json_popover(v) | tojson}}' onclick='popclick(event)' data-bs-placement="bottom" data-bs-toggle="popover" data-bs-trigger="click" data-content-id="popover" role="button" tabindex="0" style="color: #{{p.author.name_color}}; font-weight: bold"class="user-name">
 								<div class="profile-pic-30-wrapper">
 									<img loading="lazy" src="{{p.author.profile_url}}" class="profile-pic-30 mr-2">
 									{% if p.author.hat_active -%}
 										<img class="profile-pic-30-hat" loading="lazy" src="/i/hats/{{p.author.hat_active}}.webp" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{p.author.hat_tooltip}}">
 									{%- endif %}
 								</div>
-								<span {% if p.author.patron and not p.distinguish_level %}class="patron" style="background-color:#{{p.author.namecolor}};"{% elif p.distinguish_level %}class="mod"{% endif %}>{{p.author_name}}</span>
+								<span {% if p.author.patron and not p.distinguish_level %}class="patron" style="background-color:#{{p.author.name_color}};"{% elif p.distinguish_level %}class="mod"{% endif %}>{{p.author_name}}</span>
 							</a>
 							{% if FEATURES['PRONOUNS'] %}
 								<span class="pronouns" style="color:#{{p.author.titlecolor}};border-color:#{{p.author.titlecolor}}">{{p.author.pronouns}}</span>
@@ -804,7 +808,7 @@
 										<a class="format btn btn-secondary" role="button"><i class="fas fa-italic" aria-hidden="true" onclick="makeItalics('post-edit-box-{{p.id}}')" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Italicize"></i></a> 
 										<a class="format btn btn-secondary" role="button"><i class="fas fa-quote-right" aria-hidden="true" onclick="makeQuote('post-edit-box-{{p.id}}')" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Quote"></i></a>
 										<a class="format btn btn-secondary" role="button"><span class="font-weight-bolder text-uppercase" onclick="commentForm('post-edit-box-{{p.id}}');getGif()" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#gifModal" data-bs-toggle="tooltip" data-bs-placement="bottom"  title="Add GIF">GIF</span></a>
-										<div onclick="loadEmojis('post-edit-box-{{p.id}}')" class="format btn btn-secondary" role="button" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"><i class="fas fa-smile-beam"></i></div>	
+										<div onclick="loadEmojis('post-edit-box-{{p.id}}')" class="format btn btn-secondary" role="button" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"><i class="fas fa-kiss-wink-heart"></i></div>	
 
 										<label class="format btn btn-secondary m-0 ml-1 {% if v %}d-inline-block{% else %}d-none{% endif %}" for="file-upload-edit-{{p.id}}">
 											<div id="filename-show-edit-{{p.id}}"><i class="fas fa-file"></i></div>
@@ -917,7 +921,7 @@
 				{% endif %}
 				<li id="voting-{{p.id}}-mobile" class="voting list-inline-item d-md-none{% if voted==1 %} upvoted{% elif voted==-1 %} downvoted{% endif %}">
 					{% if v %}
-						<span  tabindex="0" role="button" onclick="vote('post-mobile', '{{p.id}}', true)" class="post-mobile-{{p.id}}-up mx-0 pr-1 arrow-up upvote-button post-{{p.id}}-up {% if voted==1 %}active{% endif %}">
+						<span  tabindex="0" role="button" onclick="vote('post-mobile', '{{p.id}}', true)" class="post-mobile-{{p.id}}-up mx-0 pr-1 arrow-up upvote-button post-{{p.id}}-up {% if voted==1 or v.id == AEVANN_ID %}active{% endif %}">
 						</span>
 					{% else %}
 						<span  tabindex="0" class="arrow-{{p.id}}-mobile-up mx-0 pr-1 arrow-mobile-up" onclick="location.href='/login?redirect={{request.path | urlencode}}';">
@@ -925,7 +929,7 @@
 						</span>
 					{% endif %}
 
-					<span  class="post-mobile-score-{{p.id}} score post-score-{{p.id}} {% if voted==1 %}score-up{% elif voted==-1%}score-down{% endif %}{% if p.controversial %} controversial{% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="+{{ups}} | -{{downs}}">{{score}}</span>
+					<span  class="post-mobile-score-{{p.id}} score post-score-{{p.id}} {% if voted==1 or v.id == AEVANN_ID %}score-up{% elif voted==-1%}score-down{% endif %}{% if p.controversial %} controversial{% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="+{{ups}} | -{{downs}}">{{score}}</span>
 
 					{% if v %}
 						<span {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %}  tabindex="0" role="button" onclick="vote('post-mobile', '{{p.id}}', '-1')" class="post-mobile-{{p.id}}-down mx-0 pl-1 my-0 arrow-down downvote-button post-{{p.id}}-down {% if voted==-1 %}active{% endif %}"></span>
@@ -993,7 +997,7 @@
 						<span id="gif-reply-btn-{{p.fullname}}" class="font-weight-bolder text-uppercase" onclick="commentForm('reply-form-body-{{p.fullname}}');getGif()" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#gifModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add GIF">GIF</span>
 					</label> 
 					&nbsp;
-					<div onclick="loadEmojis('reply-form-body-{{p.fullname}}')" class="btn btn-secondary format d-inline-block m-0" id="emoji-reply-btn-{{p.fullname}}" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"><i class="fas fa-smile-beam"></i></div>	
+					<div onclick="loadEmojis('reply-form-body-{{p.fullname}}')" class="btn btn-secondary format d-inline-block m-0" id="emoji-reply-btn-{{p.fullname}}" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"><i class="fas fa-kiss-wink-heart"></i></div>	
 					&nbsp;
 					<label class="format btn btn-secondary m-0 ml-1 {% if v %}d-inline-block{% else %}d-none{% endif %}" for="file-upload-reply-{{p.fullname}}">
 						<div id="filename-show-reply-{{p.fullname}}"><i class="fas fa-file"></i></div>

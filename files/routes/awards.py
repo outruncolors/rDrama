@@ -10,6 +10,8 @@ from files.classes.award import *
 from .front import frontlist
 from flask import g, request
 from files.helpers.sanitize import filter_emojis_only
+from files.helpers.marsify import marsify
+from files.helpers.owoify import owoify
 from copy import deepcopy
 
 @app.get("/shop")
@@ -20,6 +22,9 @@ def shop(v):
 		abort(404)
 
 	AWARDS = deepcopy(AWARDS2)
+
+	if v.house:
+		AWARDS[v.house] = HOUSE_AWARDS[v.house]
 
 	for val in AWARDS.values(): val["owned"] = 0
 
@@ -44,9 +49,12 @@ def buy(v, award):
 		return {"error": "You can only buy the Benefactor award with marseybux."}, 403
 
 	if award == 'ghost' and v.admin_level < 2:
-		return {"error": "Only admins can buy that award."}, 403
+		return {"error": "Only admins can buy this award."}, 403
 
 	AWARDS = deepcopy(AWARDS2)
+
+	if v.house:
+		AWARDS[v.house] = HOUSE_AWARDS[v.house]
 
 	if award not in AWARDS: abort(400)
 	og_price = AWARDS[award]["price"]
@@ -118,14 +126,18 @@ def award_thing(v, thing_type, id):
 	if thing_type == 'post': thing = get_post(id)
 	else: thing = get_comment(id)
 
-	if not thing: return {"error": f"That {thing_type} doesn't exist."}, 404
+	if not thing: return {"error": f"This {thing_type} doesn't exist."}, 404
 
 	if v.shadowbanned: return render_template('errors/500.html', err=True, v=v), 500
 	
 	kind = request.values.get("kind", "").strip()
 	
+	AWARDS = deepcopy(AWARDS2)
+	if v.house:
+		AWARDS[v.house] = HOUSE_AWARDS[v.house]
+
 	if kind not in AWARDS:
-		return {"error": "That award doesn't exist."}, 404
+		return {"error": "This award doesn't exist."}, 404
 
 	award = g.db.query(AwardRelationship).filter(
 		AwardRelationship.kind == kind,
@@ -154,7 +166,7 @@ def award_thing(v, thing_type, id):
 		return {"error": "You can't use this award on yourself."}, 400
 
 	if v.id != author.id:
-		if author.deflector and AWARDS[kind]['price'] > 500 and kind not in ('pin','unpin','benefactor'):
+		if author.deflector and (AWARDS[kind]['price'] > 500 or kind.isupper()) and kind not in ('pin','unpin','benefactor'):
 			msg = f"@{v.username} has tried to give your [{thing_type}]({thing.shortlink}) the {AWARDS[kind]['title']} Award but it was deflected and applied to them :marseytroll:"
 			send_repeatable_notification(author.id, msg)
 			msg = f"@{author.username} is under the effect of a deflector award; your {AWARDS[kind]['title']} Award has been deflected back to you :marseytroll:"
@@ -327,6 +339,30 @@ def award_thing(v, thing_type, id):
 	elif kind == "checkmark":
 		author.verified = "Verified"
 		badge_grant(user=author, badge_id=150)
+	elif "Vampire" in kind and kind == v.house:
+		if author.bite: author.bite += 86400
+		else: author.bite = int(time.time()) + 86400
+		author.old_house = author.house
+		author.house = 'Vampire'
+	elif "Racist" in kind and kind == v.house:
+		if author.earlylife: author.earlylife += 86400
+		else: author.earlylife = int(time.time()) + 86400
+	elif "Furry" in kind and kind == v.house and thing_type == 'comment':
+		if author.owoify: author.owoify += 21600
+		else: author.owoify = int(time.time()) + 21600
+		body = thing.body
+		body = owoify(body)
+		if author.marsify: body = marsify(body)
+		thing.body_html = sanitize(body, limit_pings=5)
+		g.db.add(thing)
+	elif "Femboy" in kind and kind == v.house and thing_type == 'comment':
+		if author.marsify: author.marsify += 21600
+		else: author.marsify = int(time.time()) + 21600
+		body = thing.body
+		if author.owoify: body = owoify(body)
+		body = marsify(body)
+		thing.body_html = sanitize(body, limit_pings=5)
+		g.db.add(thing)
 
 	if author.received_award_count: author.received_award_count += 1
 	else: author.received_award_count = 1

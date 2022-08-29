@@ -207,7 +207,8 @@ class Submission(Base):
 	@lazy
 	def author_name(self):
 		if self.ghost: return '👻'
-		else: return self.author.username
+		if self.author.earlylife: return f'((({self.author.username})))'
+		return self.author.username
 
 	@property
 	@lazy
@@ -224,7 +225,8 @@ class Submission(Base):
 			return self.thumburl
 		elif self.is_youtube or self.is_video: return f"{SITE_FULL}/assets/images/default_thumb_video.webp?v=1"
 		elif self.is_audio: return f"{SITE_FULL}/assets/images/default_thumb_audio.webp?v=1"
-		elif self.domain == SITE: return f"{SITE_FULL}/assets/images/{SITE_NAME}/site_preview.webp?v=3009"
+		elif self.domain.split('.')[0] == SITE.split('.')[0]:
+			return f"{SITE_FULL}/assets/images/{SITE_NAME}/site_preview.webp?v=3009"
 		else: return f"{SITE_FULL}/assets/images/default_thumb_link.webp?v=1"
 
 	@property
@@ -309,6 +311,14 @@ class Submission(Base):
 			if v and v.controversial: url += "&sort=controversial"
 
 		return url
+	
+	@lazy
+	def total_bet_voted(self, v):
+		if "closed" in self.body.lower(): return True
+		if v:
+			for o in self.options:
+				if o.exclusive == 2 and o.voted(v): return True
+		return False
 
 	@lazy
 	def realbody(self, v, listing=False):
@@ -338,19 +348,33 @@ class Submission(Base):
 			else: curr = ''
 			body += f'<input class="d-none" id="current-{self.id}"{curr}>'
 
-		for c in self.options:
-			if c.exclusive:
-				body += f'''<div class="custom-control"><input name="choice-{self.id}" autocomplete="off" class="custom-control-input" type="radio" id="{c.id}" onchange="choice_vote('{c.id}','{self.id}','post')"'''
-				if c.voted(v): body += " checked "
-				body += f'''><label class="custom-control-label" for="{c.id}">{c.body_html}<span class="presult-{self.id}'''
-				body += f'"> - <a href="/votes/post/option/{c.id}"><span id="choice-{c.id}">{c.upvotes}</span> votes</a></span></label></div>'
+		for o in self.options:
+			if o.exclusive == 2:
+				body += f'''<div class="custom-control"><input name="bet-{self.id}" autocomplete="off" class="custom-control-input bet" type="radio" id="{o.id}" onchange="bet_vote('{o.id}','{self.id}')"'''
+				if o.voted(v): body += " checked "
+				if not (v and v.coins >= 200) or self.total_bet_voted(v): body += " disabled "
+
+				body += f'''><label class="custom-control-label" for="{o.id}">{o.body_html}<span class="presult-{self.id}'''
+				body += f'"> - <a href="/votes/post/option/{o.id}"><span id="bet-{o.id}">{o.upvotes}</span> bets</a>'
+				if not self.total_bet_voted(v):
+					body += '''<span class="cost"> (cost of entry: 200 coins)</span>'''
+				body += "</label>"
+				if v and v.admin_level > 2:
+					body += f'''<button class="btn btn-primary px-2 mx-2" style="font-size:10px;padding:2px" onclick="post_toast(this,'/distribute/{o.id}')">Declare winner</button>'''
+				body += "</div>"
+
+			elif o.exclusive == 1:
+				body += f'''<div class="custom-control"><input name="choice-{self.id}" autocomplete="off" class="custom-control-input" type="radio" id="{o.id}" onchange="choice_vote('{o.id}','{self.id}','post')"'''
+				if o.voted(v): body += " checked "
+				body += f'''><label class="custom-control-label" for="{o.id}">{o.body_html}<span class="presult-{self.id}'''
+				body += f'"> - <a href="/votes/post/option/{o.id}"><span id="choice-{o.id}">{o.upvotes}</span> votes</a></span></label></div>'
 			else:
-				body += f'<div class="custom-control"><input type="checkbox" class="custom-control-input" id="{c.id}" name="option"'
-				if c.voted(v): body += " checked"
-				if v: body += f''' onchange="poll_vote('{c.id}', 'post')"'''
-				else: body += f''' onchange="poll_vote_no_v('{c.id}', '{self.id}')"'''
-				body += f'''><label class="custom-control-label" for="{c.id}">{c.body_html}<span class="presult-{self.id}'''
-				body += f'"> - <a href="/votes/post/option/{c.id}"><span id="poll-{c.id}">{c.upvotes}</span> votes</a></span></label></div>'
+				body += f'<div class="custom-control"><input type="checkbox" class="custom-control-input" id="{o.id}" name="option"'
+				if o.voted(v): body += " checked"
+				if v: body += f''' onchange="poll_vote('{o.id}', 'post')"'''
+				else: body += f''' onchange="poll_vote_no_v('{o.id}', '{self.id}')"'''
+				body += f'''><label class="custom-control-label" for="{o.id}">{o.body_html}<span class="presult-{self.id}'''
+				body += f'"> - <a href="/votes/post/option/{o.id}"><span id="poll-{o.id}">{o.upvotes}</span> votes</a></span></label></div>'
 
 
 

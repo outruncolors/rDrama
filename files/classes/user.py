@@ -48,6 +48,7 @@ class User(Base):
 	profileurl = Column(String)
 	bannerurl = Column(String)
 	house = Column(String)
+	old_house = Column(String)
 	patron = Column(Integer, default=0)
 	patron_utc = Column(Integer, default=0)
 	verified = Column(String)
@@ -125,13 +126,16 @@ class User(Base):
 	ban_evade = Column(Integer, default=0)
 	original_username = Column(String)
 	referred_by = Column(Integer, ForeignKey("users.id"))
-	can_gamble = Column(Boolean, default=True)
 	currently_held_lottery_tickets = Column(Integer, default=0)
 	total_held_lottery_tickets = Column(Integer, default=0)
 	total_lottery_winnings = Column(Integer, default=0)
 	last_viewed_post_notifs = Column(Integer, default=0)
 	last_viewed_log_notifs = Column(Integer, default=0)
 	pronouns = Column(String, default='they/them')
+	bite = Column(Integer)
+	earlylife = Column(Integer)
+	owoify = Column(Integer)
+	marsify = Column(Integer)
 
 	badges = relationship("Badge", order_by="Badge.created_utc", back_populates="user")
 	subscriptions = relationship("Subscription", back_populates="user")
@@ -162,6 +166,12 @@ class User(Base):
 	def __repr__(self):
 		return f"<User(id={self.id}, username={self.username})>"
 
+
+	@property
+	@lazy
+	def name_color(self):
+		if self.bite: return "565656"
+		return self.namecolor
 
 	@lazy
 	def mods(self, sub):
@@ -264,6 +274,9 @@ class User(Base):
 	@lazy
 	def user_awards(self):
 		return_value = list(AWARDS2.values())
+
+		if self.house:
+			return_value.append(HOUSE_AWARDS[self.house])
 
 		awards_owned = g.db.query(AwardRelationship.kind, func.count()) \
 			.filter_by(user_id=self.id, submission_id=None, comment_id=None) \
@@ -612,7 +625,10 @@ class User(Base):
 	@property
 	@lazy
 	def profile_url(self):
-		if self.agendaposter: return f"{SITE_FULL}/assets/images/pfps/agendaposter/{random.randint(1, 57)}.webp?v=1"
+		if self.agendaposter:
+			return f"{SITE_FULL}/assets/images/pfps/agendaposter/{random.randint(1, 57)}.webp?v=1"
+		if self.bite:
+			return f"{SITE_FULL}/e/marseyvampire.webp"
 		if self.profileurl: 
 			if self.profileurl.startswith('/'): return SITE_FULL + self.profileurl
 			return self.profileurl
@@ -792,3 +808,18 @@ class User(Base):
 		elif self.patron: # Patrons get profile views as a perk
 			return True
 		return False
+
+	@property
+	@lazy
+	def patron_tooltip(self):
+		if self.patron == 1:
+			return 'Contributed at least $5'
+		if self.patron == 2:
+			return 'Contributed at least $10'
+		if self.patron == 3:
+			return 'Contributed at least $20'
+		if self.patron == 4:
+			return 'Contributed at least $50'
+		if self.patron == 5:
+			return 'Contributed at least $100'
+		return ''

@@ -58,12 +58,16 @@
 								{% endif %}
 							{% endif %}
 							<div class="d-flex align-items-center mt-1 mb-2">
-								<h1 class="font-weight-bolder h3 my-0 mr-2" id="profile--name" style="color: #{{u.namecolor}}"><span {% if u.patron %}class="patron" style="background-color:#{{u.namecolor}}"{% endif %}>{{u.username}}</span></h1>
+								<h1 class="font-weight-bolder h3 my-0 mr-2" id="profile--name" style="color: #{{u.name_color}}"><span {% if u.patron %}class="patron" style="background-color:#{{u.name_color}}"{% endif %}>{{u.username}}</span></h1>
 
 								{% if u.username != u.original_username %}
 								<span id="profile--origname">
 									<i class="fas fa-user-tag text-info align-middle ml-2" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Original Username: @{{u.original_username}}"></i>
 								</span>
+								{% endif %}
+
+								{% if FEATURES['PATRON_ICONS'] and u.patron %}
+									<img loading="lazy" class="ml-3" src="/i/{{SITE_NAME}}/patron_badges/2{{u.patron}}.webp?v=1" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{u.patron_tooltip}}" alt="{{u.patron_tooltip}}">
 								{% endif %}
 
 								{% if FEATURES['HOUSES'] and u.house %}
@@ -229,7 +233,7 @@
 							&nbsp;
 							<pre class="btn btn-secondary format d-inline-block m-0 fas fa-quote-right" aria-hidden="true" onclick="makeQuote('input-message')" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Quote"></pre>
 							&nbsp;
-							<pre class="btn btn-secondary format d-inline-block m-0 fas fa-smile-beam" onclick="loadEmojis('input-message')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"></pre>
+							<pre class="btn btn-secondary format d-inline-block m-0 fas fa-kiss-wink-heart" onclick="loadEmojis('input-message')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"></pre>
 							&nbsp;
 							<input type="submit" onclick="disable(this);remove_dialog()" value="Submit" class="btn btn-primary">
 						</form>
@@ -268,7 +272,7 @@
 									<input type="hidden" name="formkey" value="{{v.formkey}}">
 									<input maxlength=100 autocomplete="off" id="customtitlebody" type="text" name="title" class="form-control" placeholder='Enter a flair here' value="{% if u.customtitleplain %}{{u.customtitleplain}}{% endif %}">
 									<div class="d-flex mt-2">
-										<a class="format" role="button"><i class="btn btn-secondary format d-inline-block m-0 fas fa-smile-beam" onclick="loadEmojis('customtitlebody')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom"  title="Add Emoji"></i></a>
+										<a class="format" role="button"><i class="btn btn-secondary format d-inline-block m-0 fas fa-kiss-wink-heart" onclick="loadEmojis('customtitlebody')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom"  title="Add Emoji"></i></a>
 										&nbsp;&nbsp;&nbsp;
 										<div class="custom-control custom-checkbox">
 											<input autocomplete="off" type="checkbox" class="custom-control-input" id="locked" name="locked" {% if u.flairchanged %}checked{% endif %}>
@@ -366,9 +370,11 @@
 				<div id="profile--badges">
 					{% for b in u.badges %}
 						{% if b.url %}
-							<a rel="nofollow noopener noreferrer" href="{{b.url}}"><img alt="{{b.name}}" width=55 height=60 loading="lazy" src="{{b.path}}?v=1021" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}></a>
+							<a class="contain" rel="nofollow noopener noreferrer" href="{{b.url}}">
+								<img alt="{{b.name}}" width=55 height=60 loading="lazy" src="{{b.path}}?v=1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}>
+							</a>
 						{% else %}
-							<img alt="{{b.name}}" width=55 height=60 loading="lazy" src="{{b.path}}?v=1021" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}>
+							<img class="contain" alt="{{b.name}}" width=55 height=60 loading="lazy" src="{{b.path}}?v=1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}>
 						{% endif %}
 					{% endfor %}
 				</div>
@@ -407,12 +413,16 @@
 					{% if u.unban_utc %}<h5 class="text-primary" id="profile-mobile--unban">{{u.unban_string}}</h5>{% endif %}
 				{% endif %}
 
-				<h1 class="h5 d-inline-block" id="profile-mobile--name" style="color: #{{u.namecolor}}"><span {% if u.patron %}class="patron" style="background-color:#{{u.namecolor}}"{% endif %}>{{u.username}}</span></h1>
+				<h1 class="h5 d-inline-block" id="profile-mobile--name" style="color: #{{u.name_color}}"><span {% if u.patron %}class="patron" style="background-color:#{{u.name_color}}"{% endif %}>{{u.username}}</span></h1>
 
 				{% if u.username != u.original_username %}
 					<span id="profile-mobile--origname">
 						<i class="fas fa-user-tag text-info align-middle ml-2" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Original Username: @{{u.original_username}}"></i>
 					</span>
+				{% endif %}
+
+				{% if FEATURES['PATRON_ICONS'] and u.patron %}
+					<img loading="lazy" class="ml-2" src="/i/{{SITE_NAME}}/patron_badges/2{{u.patron}}.webp?v=1" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{u.patron_tooltip}}" alt="{{u.patron_tooltip}}">
 				{% endif %}
 
 				{% if FEATURES['HOUSES'] and u.house %}
@@ -514,9 +524,11 @@
 				<div class="mb-3" id="profile-mobile--badges">
 					{% for b in u.badges %}
 						{% if b.url %}
-							<a rel="nofollow noopener noreferrer" href="{{b.url}}"><img alt="{{b.name}}" width=29.33 height=32 loading="lazy" src="{{b.path}}?v=1021" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}></a>
+							<a rel="nofollow noopener noreferrer" href="{{b.url}}">
+								<img class="contain" alt="{{b.name}}" width=29.33 height=32 loading="lazy" src="{{b.path}}?v=1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}>
+							</a>
 						{% else %}
-							<img alt="{{b.name}}" width=29.33 height=32 loading="lazy" src="{{b.path}}?v=1021" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}>
+							<img class="contain" alt="{{b.name}}" width=29.33 height=32 loading="lazy" src="{{b.path}}?v=1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{b.text}}" {% if b.until %}data-until="{{b.until}}" onmouseover="badge_timestamp(this)"{% endif %}>
 						{% endif %}
 					{% endfor %}
 				</div>
@@ -567,7 +579,7 @@
 						&nbsp;
 						<pre class="btn btn-secondary format d-inline-block m-0 fas fa-quote-right" aria-hidden="true" onclick="makeQuote('input-message-mobile')" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Quote"></pre>
 						&nbsp;
-						<pre class="btn btn-secondary format d-inline-block m-0 fas fa-smile-beam" onclick="loadEmojis('input-message-mobile')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"></pre>
+						<pre class="btn btn-secondary format d-inline-block m-0 fas fa-kiss-wink-heart" onclick="loadEmojis('input-message-mobile')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add Emoji"></pre>
 						&nbsp;
 						<input type="submit" onclick="disable(this);remove_dialog()" value="Submit" class="btn btn-primary">
 					</form>
@@ -604,7 +616,7 @@
 									<input type="hidden" name="formkey" value="{{v.formkey}}">
 									<input maxlength=100 autocomplete="off" id="customtitlebody-mobile" type="text" name="title" class="form-control" placeholder='Enter a flair here' value="{% if u.customtitleplain %}{{u.customtitleplain}}{% endif %}">
 									<div class="d-flex mt-2">
-										<a class="format" role="button"><i class="btn btn-secondary format d-inline-block m-0 fas fa-smile-beam" onclick="loadEmojis('customtitlebody-mobile')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom"  title="Add Emoji"></i></a>
+										<a class="format" role="button"><i class="btn btn-secondary format d-inline-block m-0 fas fa-kiss-wink-heart" onclick="loadEmojis('customtitlebody-mobile')" aria-hidden="true" data-bs-toggle="modal" data-bs-target="#emojiModal" data-bs-toggle="tooltip" data-bs-placement="bottom"  title="Add Emoji"></i></a>
 										&nbsp;&nbsp;&nbsp;
 										<div class="custom-control custom-checkbox">
 											<input autocomplete="off" type="checkbox" class="custom-control-input" id="locked-mobile" name="locked" {% if u.flairchanged %}checked{% endif %}>

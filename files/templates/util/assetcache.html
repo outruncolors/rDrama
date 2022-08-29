@@ -1,6 +1,6 @@
 {%-
 set CACHE_VER = {
-	'css/main.css': 484,
+	'css/main.css': 497,
 	'css/catalog.css': 2,
 
 	'css/4chan.css': 61,
@@ -19,7 +19,7 @@ set CACHE_VER = {
 	'js/award_modal.js': 255,
 	'js/bootstrap.js': 279,
 	'js/category_modal.js': 200,
-	'js/comments+submission_listing.js': 267,
+	'js/comments+submission_listing.js': 269,
 	'js/submission_listing.js': 261,
 	'js/emoji_modal.js': 314,
 	'js/formatting.js': 240,
@@ -30,15 +30,13 @@ set CACHE_VER = {
 	'js/userpage.js': 244,
 	'js/userpage_v.js': 245,
 	'js/lozad.js': 260,
-
-	'images/badges/': 1023,
 }
 -%}
 
 {%- macro asset(name, file='') -%}
-/assets/{{name}}{{file}}?v={{ CACHE_VER[name] }}
+	/assets/{{name}}{{file}}?v={{ CACHE_VER[name] }}
 {%- endmacro -%}
 
 {%- macro asset_siteimg(name) -%}
-/i/{{SITE_NAME}}/{{name}}?v=3009
+	/i/{{SITE_NAME}}/{{name}}?v=3009
 {%- endmacro -%}

@@ -14,6 +14,8 @@ from files.routes.static import marsey_list
 from flask import *
 from files.__main__ import app, limiter
 from files.helpers.sanitize import filter_emojis_only
+from files.helpers.marsify import marsify
+from files.helpers.owoify import owoify
 import requests
 from shutil import copyfile
 from json import loads
@@ -207,7 +209,7 @@ def comment(v):
 						num = int(li.split('.webp')[0]) + 1
 						filename = f'files/assets/images/{SITE_NAME}/sidebar/{num}.webp'
 						copyfile(oldname, filename)
-						process_image(filename, 400)
+						process_image(filename, 600)
 					elif parent_post.id == BANNER_THREAD:
 						li = sorted(os.listdir(f'files/assets/images/{SITE_NAME}/banners'),
 							key=lambda e: int(e.split('.webp')[0]))[-1]
@@ -289,7 +291,13 @@ def comment(v):
 	if v.agendaposter and not v.marseyawarded and parent_post.id not in ADMIGGERS and parent_post.sub != 'chudrama':
 		body = torture_ap(body, v.username)
 
-	body_html = sanitize(body, limit_pings=5)
+	body_for_sanitize = body
+	if v.owoify:
+		body_for_sanitize = owoify(body_for_sanitize)
+	if v.marsify:
+		body_for_sanitize = marsify(body_for_sanitize)
+
+	body_html = sanitize(body_for_sanitize, limit_pings=5)
 
 
 	if parent_post.id not in ADMIGGERS and '!slots' not in body.lower() and '!blackjack' not in body.lower() and '!wordle' not in body.lower() and AGENDAPOSTER_PHRASE not in body.lower() and parent_post.sub != 'chudrama':
@@ -377,7 +385,7 @@ def comment(v):
 		option = CommentOption(
 			comment_id=c.id,
 			body_html=filter_emojis_only(option),
-			exclusive=False
+			exclusive=0
 		)
 		g.db.add(option)
 
@@ -385,7 +393,7 @@ def comment(v):
 		choice = CommentOption(
 			comment_id=c.id,
 			body_html=filter_emojis_only(choice),
-			exclusive=True
+			exclusive=1
 		)
 		g.db.add(choice)
 
@@ -668,7 +676,7 @@ def edit_comment(cid, v):
 			option = CommentOption(
 				comment_id=c.id,
 				body_html=filter_emojis_only(i.group(1)),
-				exclusive = False
+				exclusive = 0
 			)
 			g.db.add(option)
 
@@ -677,7 +685,7 @@ def edit_comment(cid, v):
 			option = CommentOption(
 				comment_id=c.id,
 				body_html=filter_emojis_only(i.group(1)),
-				exclusive = True
+				exclusive = 1
 			)
 			g.db.add(option)
 
@@ -719,7 +727,13 @@ def edit_comment(cid, v):
 
 		body = body.strip()
 
-		body_html = sanitize(body, edit=True, limit_pings=5)
+		body_for_sanitize = body
+		if v.owoify:
+			body_for_sanitize = owoify(body_for_sanitize)
+		if v.marsify:
+			body_for_sanitize = marsify(body_for_sanitize)
+
+		body_html = sanitize(body_for_sanitize, edit=True, limit_pings=5)
 
 		if len(body_html) > 20000: abort(400)
 
