@@ -10,7 +10,7 @@
 
 /* Slots */
 #slots-block {
-  width: 700px;
+  max-width: 700px;
 }
 
 .casino-slots-results {
@@ -40,15 +40,14 @@
 
 /* Blackjack */
 #blackjack-block {
-  width: 800px;
+  max-width: 800px;
 }
 
-.casino-blackjack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 418px;
+@media screen and (max-width: 600px) {
+  .blackjack-table .hand .playing-card {
+    width: 60px;
+    height: 90px;
+  }
 }
 
 .casino-blackjack-outcome {
@@ -58,7 +57,7 @@
 }
 
 .blackjack-table {
-  max-width: 520px;
+  max-width: 500px;
 }
 
 .blackjack-table .hand {
@@ -71,13 +70,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 120px;
+  width: 60px;
+  height: 90px;
   border: 2px solid black;
   background-color: var(--gray);
   border: 1px solid var(--black);
   border-radius: 8px;
-  font-size: 48px;
+  font-size: 30px;
 }
 
 .blackjack-table .hand .playing-card.dealt {
@@ -122,6 +121,15 @@
   align-items: flex-end;
   justify-content: center;
   flex: 1;
+}
+
+@media screen and (max-width: 600px) {
+  .casino-block-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .casino-block-game {
