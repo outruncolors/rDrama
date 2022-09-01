@@ -300,7 +300,7 @@ def comment(v):
 	body_html = sanitize(body_for_sanitize, limit_pings=5)
 
 
-	if parent_post.id not in ADMIGGERS and '!wordle' not in body.lower() and AGENDAPOSTER_PHRASE not in body.lower() and parent_post.sub != 'chudrama':
+	if parent_post.id not in ADMIGGERS and '!wordle' not in body.lower() and AGENDAPOSTER_PHRASE not in body.lower():
 		existing = g.db.query(Comment.id).filter(Comment.author_id == v.id,
 																	Comment.deleted_utc == 0,
 																	Comment.parent_comment_id == parent_comment_id,
@@ -633,7 +633,7 @@ def comment(v):
 	g.db.flush()
 
 	if request.headers.get("Authorization"): return c.json
-	return {"comment": render_template("comments.html", v=v, comments=[c], ajax=True)}
+	return {"comment": render_template("comments.html", v=v, comments=[c], new_comment=True)}
 
 
 

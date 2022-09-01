@@ -88,9 +88,7 @@ class Comment(Base):
 		if not self.parent_submission: return True
 		if self.post.sub != 'chudrama': return True
 		if v:
-			if v.truecoins >= 5000: return True
-			if v.agendaposter: return True
-			if v.patron: return True
+			if v.can_see_chudrama: return True
 			if v.id == self.author_id: return True
 			if v.id == self.post.author_id: return True
 		return False
@@ -261,7 +259,14 @@ class Comment(Base):
 	@lazy
 	def author_name(self):
 		if self.ghost: return '👻'
-		if self.author.earlylife: return f'((({self.author.username})))'
+		if self.author.earlylife:
+			expiry = int(self.author.earlylife - time.time())
+			if expiry > 86400:
+				name = self.author.username
+				for i in range(int(expiry / 86400 + 1)):
+					name = f'((({name})))'
+				return name
+			return f'((({self.author.username})))'
 		return self.author.username
 
 	@lazy

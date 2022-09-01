@@ -71,7 +71,7 @@ def publish(pid, v):
 	cache.delete_memoized(User.userpagelisting)
 
 	if (v.admin_level > 0 or v.has_badge(3)) and post.sub == 'changelog':
-		send_discord_message(post.permalink)
+		send_changelog_message(post.permalink)
 
 	if SITE == 'watchpeopledie.co':
 		send_wpd_message(post.permalink)
@@ -87,7 +87,7 @@ def publish(pid, v):
 @app.get("/h/<sub>/submit")
 @auth_required
 def submit_get(v, sub=None):
-	if sub: sub = g.db.query(Sub.name).filter_by(name=sub.strip().lower()).one_or_none()
+	if sub: sub = g.db.query(Sub).filter_by(name=sub.strip().lower()).one_or_none()
 	
 	if request.path.startswith('/h/') and not sub: abort(404)
 
@@ -124,7 +124,7 @@ def post_id(pid, anything=None, v=None, sub=None):
 		if request.headers.get("Authorization") or request.headers.get("xhr"): return {"error":"Must be 18+ to view"}, 451
 		return render_template("errors/nsfw.html", v=v)
 
-	if post.new or 'thread' in post.title.lower(): defaultsortingcomments = 'new'
+	if post.new or 'megathread' in post.title.lower(): defaultsortingcomments = 'new'
 	elif v: defaultsortingcomments = v.defaultsortingcomments
 	else: defaultsortingcomments = "top"
 	sort = request.values.get("sort", defaultsortingcomments)
@@ -328,7 +328,7 @@ def viewmore(v, pid, sort, offset):
 	else: offset += 1
 	comments = comments2
 
-	return render_template("comments.html", v=v, comments=comments, p=post, ids=list(ids), render_replies=True, pid=pid, sort=sort, offset=offset, ajax=True)
+	return render_template("comments.html", v=v, comments=comments, p=post, ids=list(ids), render_replies=True, pid=pid, sort=sort, offset=offset)
 
 
 @app.get("/morecomments/<cid>")
@@ -383,7 +383,7 @@ def morecomments(v, cid):
 	if comments: p = comments[0].post
 	else: p = None
 	
-	return render_template("comments.html", v=v, comments=comments, p=p, render_replies=True, ajax=True)
+	return render_template("comments.html", v=v, comments=comments, p=p, render_replies=True)
 
 @app.post("/edit_post/<pid>")
 @limiter.limit("1/second;10/minute;100/hour;200/day")
@@ -1063,7 +1063,7 @@ def submit_post(v, sub=None):
 	cache.delete_memoized(User.userpagelisting)
 
 	if (v.admin_level > 0 or v.has_badge(3)) and post.sub == 'changelog' and not post.private:
-		send_discord_message(post.permalink)
+		send_changelog_message(post.permalink)
 
 	if not post.private and SITE == 'watchpeopledie.co':
 		send_wpd_message(post.permalink)
@@ -1071,7 +1071,7 @@ def submit_post(v, sub=None):
 	if request.headers.get("Authorization"): return post.json
 	else:
 		post.voted = 1
-		if post.new or 'thread' in post.title.lower(): sort = 'new'
+		if post.new or 'megathread' in post.title.lower(): sort = 'new'
 		else: sort = v.defaultsortingcomments
 		return render_template('submission.html', v=v, p=post, sort=sort, render_replies=True, offset=0, success=True, sub=post.subr)
 
@@ -1250,6 +1250,12 @@ def pin_post(post_id, v):
 	return {"error": "Post not found!"}
 
 
+extensions = (
+	'.webp','.jpg','.png','.jpeg','.gif',
+	'.mp4','.webm','.mov',
+	'.mp3','.wav','.ogg','.aac','.m4a','.flac'
+)
+
 @app.get("/submit/title")
 @limiter.limit("6/minute")
 @limiter.limit("6/minute", key_func=lambda:f'{SITE}-{session.get("lo_user")}')
@@ -1257,7 +1263,9 @@ def pin_post(post_id, v):
 def get_post_title(v):
 
 	url = request.values.get("url")
-	if not url or '\\' in url or 'pomf2.lain.la' in url:
+	if not url or '\\' in url: abort(400)
+
+	if any((url.lower().endswith(x) for x in extensions)):
 		abort(400)
 
 	try: x = requests.get(url, headers=titleheaders, timeout=5, proxies=proxies)

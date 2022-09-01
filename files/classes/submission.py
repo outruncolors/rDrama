@@ -82,9 +82,7 @@ class Submission(Base):
 		if SITE != 'rdrama.net': return True
 		if self.sub != 'chudrama': return True
 		if v:
-			if v.truecoins >= 5000: return True
-			if v.agendaposter: return True
-			if v.patron: return True
+			if v.can_see_chudrama: return True
 			if v.id == self.author_id: return True
 		return False
 
@@ -207,7 +205,14 @@ class Submission(Base):
 	@lazy
 	def author_name(self):
 		if self.ghost: return '👻'
-		if self.author.earlylife: return f'((({self.author.username})))'
+		if self.author.earlylife:
+			expiry = int(self.author.earlylife - time.time())
+			if expiry > 86400:
+				name = self.author.username
+				for i in range(int(expiry / 86400 + 1)):
+					name = f'((({name})))'
+				return name
+			return f'((({self.author.username})))'
 		return self.author.username
 
 	@property
@@ -292,7 +297,13 @@ class Submission(Base):
 
 	@lazy
 	def award_count(self, kind, v):
-		if v and v.poor: return 0
+		if v and v.poor:
+			return 0
+		elif self.distinguish_level:
+			if SITE_NAME == 'rDrama' and kind in ('glowie', 'tilt',):
+				return 0
+			elif SITE_NAME == 'WPD':
+				return 0
 		return len([x for x in self.awards if x.kind == kind])
 
 	@lazy

@@ -24,7 +24,7 @@ def shop(v):
 	AWARDS = deepcopy(AWARDS2)
 
 	if v.house:
-		AWARDS[v.house] = HOUSE_AWARDS[v.house]
+		AWARDS[v.house] = deepcopy(HOUSE_AWARDS[v.house])
 
 	for val in AWARDS.values(): val["owned"] = 0
 
@@ -33,6 +33,8 @@ def shop(v):
 
 	for val in AWARDS.values():
 		val["baseprice"] = int(val["price"])
+		if val["kind"].endswith('Founder'):
+			val["baseprice"] = int(val["baseprice"] / 0.75)
 		val["price"] = int(val["price"] * v.discount)
 
 	sales = g.db.query(func.sum(User.coins_spent)).scalar()
@@ -166,7 +168,7 @@ def award_thing(v, thing_type, id):
 		return {"error": "You can't use this award on yourself."}, 400
 
 	if v.id != author.id:
-		if author.deflector and (AWARDS[kind]['price'] > 500 or kind.isupper()) and kind not in ('pin','unpin','benefactor'):
+		if author.deflector and (AWARDS[kind]['price'] > 500 or kind.istitle()) and kind not in ('pin','unpin','benefactor'):
 			msg = f"@{v.username} has tried to give your [{thing_type}]({thing.shortlink}) the {AWARDS[kind]['title']} Award but it was deflected and applied to them :marseytroll:"
 			send_repeatable_notification(author.id, msg)
 			msg = f"@{author.username} is under the effect of a deflector award; your {AWARDS[kind]['title']} Award has been deflected back to you :marseytroll:"

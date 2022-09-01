@@ -44,11 +44,11 @@ def set_nick(user, nick):
 	data={"nick": nick}
 	requests.patch(url, headers=headers, json=data, timeout=5)
 
-def send_discord_message(message):
+def send_changelog_message(message):
 	data={"content": message}
 	requests.post("https://discordapp.com/api/channels/924485611715452940/messages", headers=headers, data=data, timeout=5)
-	requests.post("https://discordapp.com/api/channels/924486091795484732/messages", headers=headers, data=data, timeout=5)
+	requests.post("https://discordapp.com/api/channels/1013992002624426015/messages", headers=headers, data=data, timeout=5)
 
 def send_wpd_message(message):
 	data={"content": message}
-	requests.post("https://discordapp.com/api/channels/1012354438113017896/messages", headers=headers, data=data, timeout=5)
+	requests.post("https://discordapp.com/api/channels/1013990963846332456/messages", headers=headers, data=data, timeout=5)

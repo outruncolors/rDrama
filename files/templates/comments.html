@@ -1,6 +1,6 @@
 {%- from 'util/assetcache.html' import asset, asset_siteimg with context -%}
 {%- import 'util/helpers.html' as help -%}
-{% if not ajax %}
+{% if not request.headers.get("xhr") %}
 	{% if comment_info %}
 		<script>
 			if (location.hash != 'context')
@@ -88,7 +88,7 @@
 					</div>
 					
 		{% if render_replies %} 
-			{% if ajax or level<9 or request.path.startswith('/notifications') or request.headers.get("xhr") %}
+			{% if new_comment or level<9 or request.path.startswith('/notifications') %}
 				<div id="replies-of-{{c.fullname}}">
 					{% for reply in replies %}
 						{{single_comment(reply, level=level+1)}}
@@ -374,24 +374,24 @@
 								{% elif v %}
 									<li id="voting-{{c.id}}-mobile" class="voting list-inline-item d-md-none">
 								
-										<span  tabindex="0" role="button" onclick="vote('comment-mobile', '{{c.id}}', true)" class="comment-mobile-{{c.id}}-up mx-0 pr-1 arrow-up upvote-button comment-{{c.id}}-up {% if voted==1 %}active{% endif %}">
+										<span tabindex="0" role="button" onclick="vote('comment-mobile', '{{c.id}}', '1')" class="comment-mobile-{{c.id}}-up mx-0 pr-1 arrow-up upvote-button comment-{{c.id}}-up {% if voted==1 %}active{% endif %}">
 										</span>
 								
 										<span  class="comment-mobile-score-{{c.id}} score comment-score-{{c.id}} {% if voted==1 %}score-up{% elif voted==-1%}score-down{% endif %}{% if c.controversial %} controversial{% endif %}"{% if not c.is_banned %} data-bs-toggle="tooltip" data-bs-placement="top" title="+{{ups}} | -{{downs}}"{% endif %}>{{score}}</span>
 								
-										<span {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %}  tabindex="0" role="button" onclick="vote('comment-mobile', '{{c.id}}', '-1')" class="comment-mobile-{{c.id}}-down mx-0 pl-1 my-0 arrow-down downvote-button comment-{{c.id}}-down {% if voted==-1 %}active{% endif %}">
+										<span {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %} tabindex="0" role="button" onclick="vote('comment-mobile', '{{c.id}}', '-1')" class="comment-mobile-{{c.id}}-down mx-0 pl-1 my-0 arrow-down downvote-button comment-{{c.id}}-down {% if voted==-1 %}active{% endif %}">
 										</span>
 								
 									</li>
 								{% else %}
 									<li id="voting-{{c.id}}-mobile" class="voting list-inline-item d-md-none">
-										<span  tabindex="0" class="arrow-{{c.id}}-mobile-up mx-0 pr-1 arrow-mobile-up" onclick="location.href='/login';">
+										<span tabindex="0" class="arrow-{{c.id}}-mobile-up mx-0 pr-1 arrow-mobile-up" onclick="location.href='/login';">
 											<i class="fas fa-arrow-alt-up mx-0" aria-hidden="true"></i>
 										</span>
 								
 										<span  class="comment-mobile-score-{{c.id}} score{% if c.controversial %} controversial{% endif %}"{% if not c.is_banned %} data-bs-toggle="tooltip" data-bs-placement="top" title="+{{ups}} | -{{downs}}"{% endif %}>{{score}}</span>
 								
-										<span  tabindex="0" class="arrow-{{c.id}}-mobile-down arrow-mobile-down mx-0 pl-1 my-0" onclick="location.href='/login';">
+										<span tabindex="0" class="arrow-{{c.id}}-mobile-down arrow-mobile-down mx-0 pl-1 my-0" onclick="location.href='/login';">
 											<i class="fas fa-arrow-alt-down mx-0" aria-hidden="true"></i>
 										</span>
 									</li>
@@ -416,10 +416,10 @@
 							{% endif %}
 						{% elif v %}
 						
-							<button  tabindex="0" role="button" onclick="vote('comment', '{{c.id}}', true)" class="comment-{{c.id}}-up btn caction py-0 m-0 px-3 nobackground arrow-up upvote-button mx-0 comment-{{c.id}}-up {% if voted==1 %}active{% endif %}"></button>
+							<button tabindex="0" role="button" onclick="vote('comment', '{{c.id}}', '1')" class="comment-{{c.id}}-up btn caction py-0 m-0 px-3 nobackground arrow-up upvote-button mx-0 comment-{{c.id}}-up {% if voted==1 %}active{% endif %}"></button>
 						
 						{% else %}
-							<button  tabindex="0" class="comment-{{c.id}}-up btn caction nobackground py-0 m-0 px-3 arrow-up" onclick="location.href='/login';"></button>
+							<button tabindex="0" class="comment-{{c.id}}-up btn caction nobackground py-0 m-0 px-3 arrow-up" onclick="location.href='/login';"></button>
 						
 						{% endif %}
 						
@@ -432,11 +432,11 @@
 								<li class=" arrow-down py-0 m-0 px-3 comment-{{c.id}}-down active"></li>
 							{% endif %}
 						{% elif v %}
-							<button {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %}  tabindex="0" role="button" onclick="vote('comment', '{{c.id}}', '-1')" class="comment-{{c.id}}-down btn caction py-0 m-0 px-3 nobackground arrow-down downvote-button comment-{{c.id}}-down {% if voted==-1 %}active{% endif %}"></button>
+							<button {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %} tabindex="0" role="button" onclick="vote('comment', '{{c.id}}', '-1')" class="comment-{{c.id}}-down btn caction py-0 m-0 px-3 nobackground arrow-down downvote-button comment-{{c.id}}-down {% if voted==-1 %}active{% endif %}"></button>
 						
 						{% else %}
 						
-							<button {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %}  tabindex="0" role="button" class="comment-{{c.id}}-down btn caction py-0 m-0 px-3 nobackground arrow-down" onclick="location.href='/login';"></button>
+							<button {% if DISABLE_DOWNVOTES %}style="display:None!important"{% endif %} tabindex="0" role="button" class="comment-{{c.id}}-down btn caction py-0 m-0 px-3 nobackground arrow-down" onclick="location.href='/login';"></button>
 						
 						{% endif %}
 						
@@ -546,7 +546,7 @@
 			</div>
 
 		{% if v and v.id != c.author_id and c.body %}
-			<textarea autocomplete="off" class="d-none card border my-2 p-3 comment-box form-control rounded" id="markdown-{{c.id}}" readonly>{{c.body.strip()}}</textarea> 
+			<div autocomplete="off" class="markdown d-none card border my-2 p-3 comment-box form-control rounded" id="markdown-{{c.id}}" readonly>{{c.body.strip()}}</div> 
 		{% endif %}
 
 
@@ -595,7 +595,7 @@
 	{% endif %}
 
 	{% if render_replies %} 
-		{% if ajax or level<9 or request.path.startswith('/notifications') or request.headers.get("xhr") %}
+		{% if new_comment or level<9 or request.path.startswith('/notifications') %}
 			<div id="replies-of-{{c.fullname}}">
 				{% for reply in replies %}
 					{{single_comment(reply, level=level+1)}}
@@ -787,7 +787,7 @@
 
 {% endfor %}
 
-{% if not ajax %}
+{% if not request.headers.get("xhr") %}
 	{% if v %}
 		{% include "gif_modal.html" %}
 		{% include "emoji_modal.html" %}
@@ -877,7 +877,7 @@
 	{% include "expanded_image_modal.html" %}
 
 	<script src="{{asset('js/comments+submission_listing.js')}}"></script>
-	<script src="/assets/js/comments.js?v=259"></script>
+	<script src="/assets/js/comments.js?v=260"></script>
 
 	<script>
 		{% if p and (not v or v.highlightcomments) %}
@@ -941,7 +941,7 @@
 	<div id="viewmore-{{offset}}"><button id="viewbtn" class="btn btn-primary" onclick="viewmore({{pid}},'{{sort}}',{{offset}},{{ids}})">VIEW MORE COMMENTS</a></div>
 {% endif %}
 
-{% if SITE_NAME == 'rDrama' and not ajax and v and 'SamsungBrowser' not in g.agent %}
+{% if SITE_NAME == 'rDrama' and not request.headers.get("xhr") and v and 'SamsungBrowser' not in g.agent %}
 	<script>
 		const element = document.getElementsByClassName('comment-section')[0];
 		let color = getComputedStyle(element).getPropertyValue('background-color');
