@@ -356,6 +356,11 @@ CREATE TABLE public.comments (
     top_comment_id integer,
     stickied_utc integer,
     ghost boolean DEFAULT false NOT NULL,
+<<<<<<< HEAD
+=======
+    slots_result character varying(36),
+    blackjack_result character varying(860),
+>>>>>>> frost
     treasure_amount character varying(10),
     wordle_result character varying(115)
 );
@@ -426,6 +431,49 @@ CREATE TABLE public.follows (
     user_id integer NOT NULL,
     target_id integer NOT NULL,
     created_utc integer NOT NULL
+);
+
+
+--
+-- Name: hat_defs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hat_defs (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL,
+    description character varying(300) NOT NULL,
+    author_id integer NOT NULL,
+    price integer NOT NULL
+);
+
+
+--
+-- Name: hat_defs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hat_defs_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hat_defs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hat_defs_id_seq OWNED BY public.hat_defs.id;
+
+
+--
+-- Name: hats; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hats (
+    hat_id integer NOT NULL,
+    user_id integer NOT NULL
 );
 
 
@@ -860,7 +908,10 @@ CREATE TABLE public.users (
     bite integer,
     old_house character varying(16),
     owoify integer,
-    marsify integer
+    marsify integer,
+    is_muted boolean DEFAULT false NOT NULL,
+    coins_spent_on_hats integer DEFAULT 0 NOT NULL,
+    equipped_hat_id integer
 );
 
 
@@ -935,6 +986,13 @@ ALTER TABLE ONLY public.category ALTER COLUMN id SET DEFAULT nextval('public.cat
 --
 
 ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.comments_id_seq'::regclass);
+
+
+--
+-- Name: hat_defs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hat_defs ALTER COLUMN id SET DEFAULT nextval('public.hat_defs_id_seq'::regclass);
 
 
 --
@@ -1122,6 +1180,30 @@ ALTER TABLE ONLY public.flags
 
 ALTER TABLE ONLY public.follows
     ADD CONSTRAINT follows_pkey PRIMARY KEY (target_id, user_id);
+
+
+--
+-- Name: hat_defs hat_defs_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hat_defs
+    ADD CONSTRAINT hat_defs_name_key UNIQUE (name);
+
+
+--
+-- Name: hat_defs hat_defs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hat_defs
+    ADD CONSTRAINT hat_defs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hats hats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hats
+    ADD CONSTRAINT hats_pkey PRIMARY KEY (user_id, hat_id);
 
 
 --
@@ -2067,6 +2149,30 @@ ALTER TABLE ONLY public.follows
 
 
 --
+-- Name: hat_defs hat_defs_author_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hat_defs
+    ADD CONSTRAINT hat_defs_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id);
+
+
+--
+-- Name: hats hats_hat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hats
+    ADD CONSTRAINT hats_hat_id_fkey FOREIGN KEY (hat_id) REFERENCES public.hat_defs(id);
+
+
+--
+-- Name: hats hats_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hats
+    ADD CONSTRAINT hats_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: marseys marsey_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2275,6 +2381,14 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: users users_equipped_hat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_equipped_hat_id_fkey FOREIGN KEY (equipped_hat_id) REFERENCES public.hat_defs(id);
+
+
+--
 -- Name: viewers view_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2401,6 +2515,13 @@ COPY public.badge_defs (id, name, description) FROM stdin;
 22	Renthog	Contributed at least $10
 23	Landchad	Contributed at least $20
 24	Terminally online turboautist	Contributed at least $50
+157	A Minor Setback	Lost a 1,000 dramacoin bet. Keep going!
+158	Just One More Hand	Lost a 10,000 dramacoin bet. But it's fine, you're due for a big win!
+160	Lil Goombler	Won a 1,000 dramacoin bet. Nice job!
+162	King Goombler	Won a 100,000 dramacoin bet. Wipe your sweaty palms off and bet it all again, you're on a roll!
+163	Marsey Jacobs	Designed 10 hats!
+166	Giorgio Armarsey	Designed 250 hats 😲
+164	Marsey de Givenchy	Designed 50 hats, holy cap.
 4	White Hat	Discreetly reported an exploit
 1	Alpha User	Joined during open alpha
 2	Verified Email	Verified Email
@@ -2477,6 +2598,9 @@ COPY public.badge_defs (id, name, description) FROM stdin;
 117	Stone Skeptic	This user rejects igneous lies
 129	Misinformation Superspreader	This poster was fact checked by real American patriots
 130	Columbine Enthusiast (TEMPORAL FLUX EDITION)	This user is an acclaimed Reb+VoDKa slash author
+159	It's Over	Lost a 100,000 dramacoin bet. It's fucking over.
+161	Pro Goombler	Won a 10,000 dramacoin bet. Some would say to quit while you're ahead, but they didn't just win 10k - keep at it!
+165	Marsey Chanel	Designed 100 hats!!!
 28	Chud	Marked as a chud
 59	Lolcow	Beautiful and valid milk provider
 25	Marsey's Sugar Daddy	Contributed at least $100
@@ -2504,7 +2628,7 @@ COPY public.badge_defs (id, name, description) FROM stdin;
 -- Name: badge_defs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.badge_defs_id_seq', 156, true);
+SELECT pg_catalog.setval('public.badge_defs_id_seq', 166, true);
 
 
 --

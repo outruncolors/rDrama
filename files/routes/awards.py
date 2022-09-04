@@ -167,6 +167,9 @@ def award_thing(v, thing_type, id):
 	if kind == "benefactor" and author.id == v.id:
 		return {"error": "You can't use this award on yourself."}, 400
 
+	if (kind.startswith('Femboy') or kind == 'marsify') and author.marsify == 1:
+		return {"error": "User is already permenantly marsified!"}, 403
+
 	if v.id != author.id:
 		if author.deflector and (AWARDS[kind]['price'] > 500 or kind.istitle()) and kind not in ('pin','unpin','benefactor'):
 			msg = f"@{v.username} has tried to give your [{thing_type}]({thing.shortlink}) the {AWARDS[kind]['title']} Award but it was deflected and applied to them :marseytroll:"
@@ -349,22 +352,26 @@ def award_thing(v, thing_type, id):
 	elif "Racist" in kind and kind == v.house:
 		if author.earlylife: author.earlylife += 86400
 		else: author.earlylife = int(time.time()) + 86400
-	elif "Furry" in kind and kind == v.house and thing_type == 'comment':
+	elif ("Furry" in kind and kind == v.house) or kind == 'owoify':
 		if author.owoify: author.owoify += 21600
 		else: author.owoify = int(time.time()) + 21600
-		body = thing.body
-		body = owoify(body)
-		if author.marsify: body = marsify(body)
-		thing.body_html = sanitize(body, limit_pings=5)
-		g.db.add(thing)
-	elif "Femboy" in kind and kind == v.house and thing_type == 'comment':
+
+		if thing_type == 'comment' and not author.deflector:
+			body = thing.body
+			body = owoify(body)
+			if author.marsify: body = marsify(body)
+			thing.body_html = sanitize(body, limit_pings=5)
+			g.db.add(thing)
+	elif ("Femboy" in kind and kind == v.house) or kind == 'marsify':
 		if author.marsify: author.marsify += 21600
 		else: author.marsify = int(time.time()) + 21600
-		body = thing.body
-		if author.owoify: body = owoify(body)
-		body = marsify(body)
-		thing.body_html = sanitize(body, limit_pings=5)
-		g.db.add(thing)
+
+		if thing_type == 'comment' and not author.deflector:
+			body = thing.body
+			if author.owoify: body = owoify(body)
+			body = marsify(body)
+			thing.body_html = sanitize(body, limit_pings=5)
+			g.db.add(thing)
 
 	if author.received_award_count: author.received_award_count += 1
 	else: author.received_award_count = 1

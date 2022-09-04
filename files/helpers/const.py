@@ -42,24 +42,33 @@ AJ_REPLACEMENTS = {
 	'EVERYBODY': 'EVERYPONY',
 }
 
+SLURS = {
+	"nigger": "BIPOC",
+	"niglet": "BIPOClet",
+	"faggot": "cute twink",
+	"fag": "strag",
+	"spic ": "hard-working American ",
+	"trannie": "🚂🚃🚃",
+	"tranny": "🚂🚃🚃",
+	"troon": "🚂🚃🚃",
+	"dyke": "cute lesbian",
+	"gook": "superior IQ Asian",
+	"kike": "jewish chad",
+	"daisy's destruction": "Cars 2",
+	"daisys destruction": "Cars 2",
+	"daisy destruction": "Cars 2",
+}
+
 if SITE_NAME == 'rDrama':
-	SLURS = {
+	RDRAMA_SLURS = {
 		"tiananmen square": "tiananmen square didn't happen (but it should have)",
 		"dasha": "beautiful angelic perfect Dasha/future Mrs. Carp",
 		"retarded": "r-slurred",
 		"retard": "r-slur",
-		"faggot": "cute twink",
-		"fag": "strag",
 		"pedophile": "libertarian",
 		"kill yourself": "keep yourself safe",
-		"nigger": "BIPOC",
-		"niglet": "BIPOClet",
 		"steve akins": "penny verity oaken",
-		"trannie": "🚂🚃🚃",
-		"tranny": "🚂🚃🚃",
-		"troon": "🚂🚃🚃",
 		"nonewnormal": "HorseDewormerAddicts",
-		"kike": "jewish chad",
 		"latinos": "latinx",
 		"latino": "latinx",
 		"latinas": "latinx",
@@ -89,35 +98,12 @@ if SITE_NAME == 'rDrama':
 		"kung flu": "SARS-CoV-2 syndemic",
 		"elon musk": "rocket daddy",
 		"fake and gay": "fake and straight",
-
 		" rapist": " male feminist",
-
 		" kys ": " keep yourself safe ",
 		" pedo ": " libertarian ",
 		" pedos ": " libertarians ",
 	}
-elif SITE_NAME == 'WPD':
-	SLURS = {
-		"nigger": "BIPOC",
-		"niglet": "young BIPOC",
-		"faggot": "cute twink",
-		"fag": "strag",
-		"spic ": "hard-working American ",
-		"tranny": "valid woman",
-		"trannie": "valid woman",
-		"dyke": "cute lesbian",
-		"gook": "superior IQ Asian",
-		"kike": "jewish chad",
-		"daisy's destruction": "Cars 2",
-		"daisys destruction": "Cars 2",
-		"daisy destruction": "Cars 2",
-	}
-else:
-	SLURS = {
-		"faggot": "cute twink",
-		"fag": "strag",
-		"nigger": "🏀"
-	}
+	SLURS.update(RDRAMA_SLURS)
 
 single_words = "|".join([slur.lower() for slur in SLURS.keys()])
 
@@ -161,7 +147,7 @@ FEATURES = {
 	'COUNTRY_CLUB': True,
 	'PRONOUNS': False,
 	'BADGES': True,
-	'HATS': False,
+	'HATS': True,
 	'HOUSES': False,
 	'GAMBLING': True,
 	'WORDLE': True,
@@ -197,9 +183,9 @@ BASEDBOT_ID = 0
 BBBB_ID = 0
 
 SCHIZO_ID = 0
-A_ID = 0
 KIPPY_ID = 0
 PIZZASHILL_ID = 0
+GUMROAD_MESSY = ()
 PIZZA_VOTERS = ()
 IDIO_ID = 0
 CARP_ID = 0
@@ -230,11 +216,10 @@ BANNER_THREAD = 0
 BADGE_THREAD = 0
 SNAPPY_THREAD = 0
 MARSEY_THREAD = 0
-GAMBLING_THREAD = 0
+HAT_THREAD = 0
 
-if SITE in ('rdrama.net', 'devrama.xyz'):
+if SITE == 'rdrama.net':
 	FEATURES['PRONOUNS'] = True
-	FEATURES['HATS'] = True
 	FEATURES['HOUSES'] = True
 
 	SIDEBAR_THREAD = 37696
@@ -242,8 +227,8 @@ if SITE in ('rdrama.net', 'devrama.xyz'):
 	BADGE_THREAD = 37833
 	SNAPPY_THREAD = 37749
 	MARSEY_THREAD = 37838
-	GAMBLING_THREAD = 39413
-if SITE in {'rdrama.net', 'devrama.xyz'}:
+	HAT_THREAD = 100210
+
 	HOLE_COST = 50000
 	HOLE_INACTIVITY_DELETION = True
 
@@ -254,9 +239,9 @@ if SITE in {'rdrama.net', 'devrama.xyz'}:
 	BBBB_ID = 12125
 
 	SCHIZO_ID = 8494
-	A_ID = 1230
 	KIPPY_ID = 7150
 	PIZZASHILL_ID = 2424
+	GUMROAD_MESSY = (1230,1379)
 	PIZZA_VOTERS = (747,1963,9712)
 	IDIO_ID = 30
 	CARP_ID = 995
@@ -275,7 +260,7 @@ if SITE in {'rdrama.net', 'devrama.xyz'}:
 	BUG_THREAD = 18459
 	POLL_THREAD = 79285
 
-	WELCOME_MSG = "Hi there! It's me, your soon-to-be favorite rDrama user @carpathianflorist here to give you a brief rundown on some of the sick features we have here. ~You'll probably want to start by following me, though. So go ahead and click my name and then smash that Follow button. This is actually really important, so go on. Hurry.~ Actually, not enough of you were able to follow even the simplest of instructions, so now everyone is following me by default! If you’d like, you can still get some clicking practice in by hitting the unfollow button. But I’ll be notified of that, and you’re new, and you wouldn’t want to get off on the wrong foot here, would you?\nThanks!\nNext up: If you're a member of the media, similarly just shoot me a DM and I'll set about verifying you and then we can take care of your sad journalism stuff.\n**FOR EVERYONE ELSE**\n Begin by navigating to [the settings page](/settings/profile) (we'll be prettying this up so it's less convoluted soon, don't worry) and getting some basic customization done.\n### Themes\nDefinitely change your theme right away, the default one (Midnight) is pretty enough, but why not use something *exotic* like Win98, or *flashy* like Tron? Even Coffee is super tasteful and way more fun than the default. More themes to come when we get around to it!\n### Avatar/pfp\nYou'll want to set this pretty soon. Set the banner too while you're at it. Your profile is important!\n### Flairs\nSince you're already on the settings page, you may as well set a flair, too. As with your username, you can - obviously - choose the color of this, either with a hex value or just from the preset colors. And also like your username, you can change this at any time. [Paypigs](https://marsey1.gumroad.com/l/rdrama) can even further relive the glory days of 90s-00s internet and set obnoxious signatures.\n### PROFILE ANTHEMS\nSpeaking of profiles, hey, remember MySpace? Do you miss autoplaying music assaulting your ears every time you visited a friend's page? Yeah, we brought that back. Enter a YouTube URL, wait a few seconds for it to process, and then BAM! you've got a profile anthem which people cannot mute. Unless they spend 20,000 dramacoin in the shop for a mute button. Which you can then remove from your profile by spending 40,000 dramacoin on an unmuteable anthem. Get fucked poors!\n### Dramacoin?\nDramacoin is basically our take on the karma system. Except unlike the karma system, it's not gay and boring and stupid and useless. Dramacoin can be spent at [Marsey's Dramacoin Emporium](/shop) on upgrades to your user experience (many more coming than what's already listed there), and best of all on tremendously annoying awards to fuck with your fellow dramautists. We're always adding more, so check back regularly in case you happen to miss one of the announcement posts.\nLike karma, dramacoin is obtained by getting upvotes on your threads and comments. *Unlike* karma, it's also obtained by getting downvotes on your threads and comments. Downvotes don't really do anything here - they pay the same amount of dramacoin and they increase thread/comment ranking just the same as an upvote. You just use them to express petty disapproval and hopefully start a fight. Because all votes are visible here. To hell with your anonymity.\nDramacoin can also be traded amongst users from their profiles. Note that there is a 3% transaction fee.\n### Badges\nRemember all those neat little metallic icons you saw on my profile when you were following me? If not, scroll back up and go have a look. And doublecheck to make sure you pressed the Follow button. Anyway, those are badges. You earn them by doing a variety of things. Some of them even offer benefits, like discounts at the shop. A [complete list of badges and their requirements can be found here](/badges), though I add more pretty regularly, so keep an eye on the [changelog](/h/changelog).\n### Other stuff\nWe're always adding new features, and we take a fun-first approach to development. If you have a suggestion for something that would be fun, funny, annoying - or best of all, some combination of all three - definitely make a thread about it. Or just DM me if you're shy. Weirdo. Anyway there's also the [leaderboards](/leaderboard), boring stuff like two-factor authentication you can toggle on somewhere in the settings page (psycho), the ability to save posts and comments, more than a thousand emojis already (most of which are rDrama originals), and on and on and on and on. This is just the basics, mostly to help you get acquainted with some of the things you can do here to make it more easy on the eyes, customizable, and enjoyable. If you don't enjoy it, just go away! We're not changing things to suit you! Get out of here loser! And no, you can't delete your account :na:\nI love you.<BR>*xoxo Carp* 💋"
+	WELCOME_MSG = "Hi there! It's me, your soon-to-be favorite rDrama user @carpathianflorist here to give you a brief rundown on some of the sick features we have here. ~You'll probably want to start by following me, though. So go ahead and click my name and then smash that Follow button. This is actually really important, so go on. Hurry.~ Actually, not enough of you were able to follow even the simplest of instructions, so now everyone is following me by default! If you'd like, you can still get some clicking practice in by hitting the unfollow button. But I'll be notified of that, and you're new, and you wouldn't want to get off on the wrong foot here, would you?\nThanks!\nNext up: If you're a member of the media, similarly just shoot me a DM and I'll set about verifying you and then we can take care of your sad journalism stuff.\n**FOR EVERYONE ELSE**\n Begin by navigating to [the settings page](/settings/profile) (we'll be prettying this up so it's less convoluted soon, don't worry) and getting some basic customization done.\n### Themes\nDefinitely change your theme right away, the default one (Midnight) is pretty enough, but why not use something *exotic* like Win98, or *flashy* like Tron? Even Coffee is super tasteful and way more fun than the default. More themes to come when we get around to it!\n### Avatar/pfp\nYou'll want to set this pretty soon. Set the banner too while you're at it. Your profile is important!\n### Flairs\nSince you're already on the settings page, you may as well set a flair, too. As with your username, you can - obviously - choose the color of this, either with a hex value or just from the preset colors. And also like your username, you can change this at any time. [Paypigs](https://marsey1.gumroad.com/l/rdrama) can even further relive the glory days of 90s-00s internet and set obnoxious signatures.\n### PROFILE ANTHEMS\nSpeaking of profiles, hey, remember MySpace? Do you miss autoplaying music assaulting your ears every time you visited a friend's page? Yeah, we brought that back. Enter a YouTube URL, wait a few seconds for it to process, and then BAM! you've got a profile anthem which people cannot mute. Unless they spend 20,000 dramacoin in the shop for a mute button. Which you can then remove from your profile by spending 40,000 dramacoin on an unmuteable anthem. Get fucked poors!\n### Dramacoin?\nDramacoin is basically our take on the karma system. Except unlike the karma system, it's not gay and boring and stupid and useless. Dramacoin can be spent at [Marsey's Dramacoin Emporium](/shop) on upgrades to your user experience (many more coming than what's already listed there), and best of all on tremendously annoying awards to fuck with your fellow dramautists. We're always adding more, so check back regularly in case you happen to miss one of the announcement posts.\nLike karma, dramacoin is obtained by getting upvotes on your threads and comments. *Unlike* karma, it's also obtained by getting downvotes on your threads and comments. Downvotes don't really do anything here - they pay the same amount of dramacoin and they increase thread/comment ranking just the same as an upvote. You just use them to express petty disapproval and hopefully start a fight. Because all votes are visible here. To hell with your anonymity.\nDramacoin can also be traded amongst users from their profiles. Note that there is a 3% transaction fee.\n### Badges\nRemember all those neat little metallic icons you saw on my profile when you were following me? If not, scroll back up and go have a look. And doublecheck to make sure you pressed the Follow button. Anyway, those are badges. You earn them by doing a variety of things. Some of them even offer benefits, like discounts at the shop. A [complete list of badges and their requirements can be found here](/badges), though I add more pretty regularly, so keep an eye on the [changelog](/h/changelog).\n### Other stuff\nWe're always adding new features, and we take a fun-first approach to development. If you have a suggestion for something that would be fun, funny, annoying - or best of all, some combination of all three - definitely make a thread about it. Or just DM me if you're shy. Weirdo. Anyway there's also the [leaderboards](/leaderboard), boring stuff like two-factor authentication you can toggle on somewhere in the settings page (psycho), the ability to save posts and comments, more than a thousand emojis already (most of which are rDrama originals), and on and on and on and on. This is just the basics, mostly to help you get acquainted with some of the things you can do here to make it more easy on the eyes, customizable, and enjoyable. If you don't enjoy it, just go away! We're not changing things to suit you! Get out of here loser! And no, you can't delete your account :na:\nI love you.<BR>*xoxo Carp* 💋"
 	ROLES={
 		"admin": "992254560330600508",
 		"linked": "890342909390520382",
@@ -336,9 +321,7 @@ elif SITE == 'watchpeopledie.co':
 	MARSEY_THREAD = 5743
 else: # localhost or testing environment implied
 	FEATURES['PRONOUNS'] = True
-	FEATURES['HATS'] = True
 	FEATURES['HOUSES'] = True
-	FEATURES['REPOST_DETECTION'] = False
 
 if CARP_ID: GIFT_NOTIF_ID = CARP_ID
 elif AEVANN_ID: GIFT_NOTIF_ID = AEVANN_ID
@@ -731,6 +714,27 @@ AWARDS = {
 	},
 }
 
+if SITE_NAME != 'rDrama':
+	EXTRA_AWARDS = {
+		"owoify": {
+			"kind": "owoify",
+			"title": "OwOify",
+			"description": "OwOifies the recipient's comments for 6 hours.",
+			"icon": "fas fa-paw-simple",
+			"color": "text-purple",
+			"price": 400
+		},
+		"marsify": {
+			"kind": "marsify",
+			"title": "Marsify",
+			"description": "Marsifies the recipient's comments for 6 hours.",
+			"icon": "fas fa-cat",
+			"color": "text-white",
+			"price": 400
+		},
+	}
+	AWARDS.update(EXTRA_AWARDS)
+
 if SITE_NAME == 'PCM':
 	PCM_AWARDS = {
 		"croag": {
@@ -758,7 +762,7 @@ if SITE_NAME == 'PCM':
 			"price": 4000
 		}
 	}
-	AWARDS = {**PCM_AWARDS, **AWARDS}
+	AWARDS.update(PCM_AWARDS)
 
 # Disable unused awards, and site-specific award inclusion/exclusion.
 AWARDS_DISABLED = [
@@ -796,7 +800,7 @@ HOUSE_AWARDS = {
 	"Racist": {
         "kind": "Racist",
         "title": "Early Life",
-        "description": "Checks the recipient’s Early Life section on Wikipedia. Notices.",
+        "description": "Checks the recipient's Early Life section on Wikipedia. Notices.",
         "icon": "fas fa-star-of-david",
         "color": "text-yellow",
         "price": 400
@@ -813,7 +817,7 @@ if SITE_NAME != 'rDrama':
 	AWARDS_DISABLED.append('progressivestack')
 
 if SITE == 'pcmemes.net':
-	AWARDS_DISABLED.extend(['ban','pizzashill','marsey','bird','grass','chud','unblockable',])
+	AWARDS_DISABLED.extend(['ban','pizzashill','marsey','bird','grass','chud','unblockable'])
 	AWARDS_DISABLED.remove('ghost')
 elif SITE_NAME == 'WPD':
 	AWARDS_DISABLED.remove('lootbox')
@@ -828,7 +832,7 @@ DOUBLE_XP_ENABLED = -1 # set to unixtime for when DXP begins, -1 to disable
 TROLLTITLES = [
 	"how will @{username} ever recover?",
 	"@{username} BTFO",
-	"[META] Getting really sick of @{username}’s shit",
+	"[META] Getting really sick of @{username}'s shit",
 	"Pretty sure this is @{username}'s Reddit account",
 	"Hey jannies can you please ban @{username}",
 ]
@@ -857,7 +861,7 @@ FORTUNE_REPLIES = ('<b style="color:#6023f8">Your fortune: Allah Wills It</b>','
 
 FACTCHECK_REPLIES = ('<b style="color:#6023f8">Factcheck: This claim has been confirmed as correct by experts. </b>','<b style="color:#d302a7">Factcheck: This claim has been classified as misogynistic.</b>','<b style="color:#e7890c">Factcheck: This claim is currently being debunked.</b>','<b style="color:#7fec11">Factcheck: This claim is 100% true.</b>','<b style="color:#9d05da">Factcheck: This claim hurts trans lives.</b>','<b style="color:#f51c6a">Factcheck: [REDACTED].</b>','<b style="color:#00cbb0">Factcheck: This claim is both true and false.</b>','<b style="color:#2a56fb">Factcheck: You really believe that shit? Lmao dumbass nigga 🤣</b>','<b style="color:#0893e1">Factcheck: None of this is real.</b>','<b style="color:#16f174">Factcheck: Yes.</b>','<b style="color:#fd4d32">Factcheck: This claim has not been approved by experts.</b>','<b style="color:#bac200">Factcheck: This claim is a gross exageration of reality.</b>','<b style="color:#ff2200">Factcheck: WARNING! THIS CLAIM HAS BEEN CLASSIFIED AS DANGEROUS. PLEASE REMAIN STILL, AN AGENT WILL COME TO MEET YOU SHORTLY.</b>')
 
-EIGHTBALL_REPLIES = ('<b style="color:#7FEC11">The 8-Ball Says: It is certain.</b>', '<b style="color:#7FEC11">The 8-Ball Says: It is decidedly so.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Without a doubt.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Yes definitely.</b>', '<b style="color:#7FEC11">The 8-Ball Says: You may rely on it.</b>', '<b style="color:#7FEC11">The 8-Ball Says: As I see it, yes.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Most likely.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Outlook good.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Yes.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Signs point to yes.</b>', '<b style="color:#E7890C">The 8-Ball Says: Reply hazy, try again.</b>', '<b style="color:#E7890C">The 8-Ball Says: Ask again later.</b>', '<b style="color:#E7890C">The 8-Ball Says: Better not tell you now.</b>', '<b style="color:#E7890C">The 8-Ball Says: Cannot predict now.</b>', '<b style="color:#E7890C">The 8-Ball Says: Concentrate and ask again.</b>', '<b style="color:#FD4D32">The 8-Ball Says: Don’t count on it.</b>', '<b style="color:#FD4D32">The 8-Ball Says: My reply is no.</b>', '<b style="color:#FD4D32">The 8-Ball Says: My sources say no.</b>', '<b style="color:#FD4D32">The 8-Ball Says: Outlook not so good.</b>', '<b style="color:#FD4D32">The 8-Ball Says: Very doubtful.</b>')
+EIGHTBALL_REPLIES = ('<b style="color:#7FEC11">The 8-Ball Says: It is certain.</b>', '<b style="color:#7FEC11">The 8-Ball Says: It is decidedly so.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Without a doubt.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Yes definitely.</b>', '<b style="color:#7FEC11">The 8-Ball Says: You may rely on it.</b>', '<b style="color:#7FEC11">The 8-Ball Says: As I see it, yes.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Most likely.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Outlook good.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Yes.</b>', '<b style="color:#7FEC11">The 8-Ball Says: Signs point to yes.</b>', '<b style="color:#E7890C">The 8-Ball Says: Reply hazy, try again.</b>', '<b style="color:#E7890C">The 8-Ball Says: Ask again later.</b>', '<b style="color:#E7890C">The 8-Ball Says: Better not tell you now.</b>', '<b style="color:#E7890C">The 8-Ball Says: Cannot predict now.</b>', '<b style="color:#E7890C">The 8-Ball Says: Concentrate and ask again.</b>', '<b style="color:#FD4D32">The 8-Ball Says: Don\'t count on it.</b>', '<b style="color:#FD4D32">The 8-Ball Says: My reply is no.</b>', '<b style="color:#FD4D32">The 8-Ball Says: My sources say no.</b>', '<b style="color:#FD4D32">The 8-Ball Says: Outlook not so good.</b>', '<b style="color:#FD4D32">The 8-Ball Says: Very doubtful.</b>')
 
 
 
@@ -937,7 +941,7 @@ if path.isfile(f'snappy_{SITE_NAME}.txt'):
 
 YOUTUBE_KEY = environ.get("YOUTUBE_KEY", "").strip()
 
-ADMIGGERS = {SIDEBAR_THREAD,BANNER_THREAD,BADGE_THREAD,SNAPPY_THREAD,MARSEY_THREAD,GAMBLING_THREAD}
+ADMIGGERS = {SIDEBAR_THREAD,BANNER_THREAD,BADGE_THREAD,SNAPPY_THREAD,MARSEY_THREAD,HAT_THREAD}
 
 proxies = {"http":"http://127.0.0.1:18080","https":"http://127.0.0.1:18080"}
 
@@ -948,7 +952,6 @@ approved_embed_hosts = {
 	'rdrama.net',
 	'pcmemes.net',
 	'watchpeopledie.co',
-	'devrama.xyz',
 	'imgur.com',
 	'lain.la',
 	'pngfind.com',
@@ -1033,7 +1036,7 @@ GUMROAD_ID = environ.get("GUMROAD_ID", "rdrama").strip()
 DEFAULT_THEME = environ.get("DEFAULT_THEME", "midnight").strip()
 DEFAULT_TIME_FILTER = environ.get("DEFAULT_TIME_FILTER", "all").strip()
 CARD_VIEW = bool(int(environ.get("CARD_VIEW", 1)))
-DISABLE_DOWNVOTES = bool(int(environ.get("CARD_VIEW", 0)))
+DISABLE_DOWNVOTES = bool(int(environ.get("DISABLE_DOWNVOTES", 0)))
 DISCORD_SERVER_ID = environ.get("DISCORD_SERVER_ID",'').strip()
 DISCORD_CLIENT_ID = environ.get("DISCORD_CLIENT_ID",'').strip()
 DISCORD_CLIENT_SECRET = environ.get("DISCORD_CLIENT_SECRET",'').strip()
@@ -1041,7 +1044,6 @@ DISCORD_BOT_TOKEN = environ.get("DISCORD_BOT_TOKEN",'').strip()
 DISCORD_AUTH = environ.get("DISCORD_AUTH",'').strip()
 GIPHY_KEY = environ.get('GIPHY_KEY').strip()
 MASTER_KEY = environ.get("MASTER_KEY")
-TRUSTED_SERVER_PSK = environ.get("TRUSTED_SERVER_PSK", None)
 FP = environ.get("FP")
 
 tiers={

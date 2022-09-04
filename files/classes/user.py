@@ -20,6 +20,7 @@ from .exiles import *
 from .sub_block import *
 from .sub_subscription import *
 from .sub_join import *
+from .hats import *
 from files.__main__ import Base, cache
 from files.helpers.security import *
 from copy import deepcopy
@@ -70,6 +71,7 @@ class User(Base):
 	admin_level = Column(Integer, default=0)
 	last_active = Column(Integer, default=0, nullable=False)
 	coins_spent = Column(Integer, default=0)
+	coins_spent_on_hats = Column(Integer, default=0)
 	lootboxes_bought = Column(Integer, default=0)
 	agendaposter = Column(Integer, default=0)
 	is_activated = Column(Boolean, default=False)
@@ -108,6 +110,7 @@ class User(Base):
 	is_banned = Column(Integer, default=0)
 	unban_utc = Column(Integer, default=0)
 	ban_reason = deferred(Column(String))
+	is_muted = Column(Boolean, default=False, nullable=False)
 	club_allowed = Column(Boolean)
 	login_nonce = Column(Integer, default=0)
 	reserved = deferred(Column(String))
@@ -136,6 +139,7 @@ class User(Base):
 	earlylife = Column(Integer)
 	owoify = Column(Integer)
 	marsify = Column(Integer)
+	equipped_hat_id = Column(Integer, ForeignKey("hat_defs.id"))
 
 	badges = relationship("Badge", order_by="Badge.created_utc", back_populates="user")
 	subscriptions = relationship("Subscription", back_populates="user")
@@ -148,6 +152,9 @@ class User(Base):
 	apps = relationship("OauthApp", back_populates="author")
 	awards = relationship("AwardRelationship", primaryjoin="User.id==AwardRelationship.user_id", back_populates="user")
 	referrals = relationship("User")
+	equipped_hat = relationship("HatDef", primaryjoin="User.equipped_hat_id==HatDef.id")
+	designed_hats = relationship("HatDef", primaryjoin="User.id==HatDef.author_id", back_populates="author")
+	owned_hats = relationship("Hat", back_populates="owners")
 
 	def __init__(self, **kwargs):
 
@@ -166,6 +173,16 @@ class User(Base):
 	def __repr__(self):
 		return f"<User(id={self.id}, username={self.username})>"
 
+
+	@property
+	@lazy
+	def num_of_owned_hats(self):
+		return len(self.owned_hats)
+
+	@property
+	@lazy
+	def num_of_designed_hats(self):
+		return len(self.designed_hats)
 
 	@property
 	@lazy
@@ -239,6 +256,7 @@ class User(Base):
 			date = time.strftime("%d %b", time.gmtime(self.created_utc))
 			now = time.strftime("%d %b", time.gmtime())
 			if date == now:
+				g.db.flush()
 				if not self.has_badge(134):
 					new_badge = Badge(badge_id=134, user_id=self.id)
 					g.db.add(new_badge)
@@ -305,7 +323,7 @@ class User(Base):
 	def paid_dues(self):
 		if not FEATURES['COUNTRY_CLUB']:
 			return True
-		return not self.shadowbanned and not (self.is_banned and not self.unban_utc) and (self.admin_level or self.club_allowed or (self.club_allowed != False and self.truecoins > dues))
+		return not self.shadowbanned and not (self.is_banned and not self.unban_utc) and (self.admin_level or self.club_allowed or (self.club_allowed != False and self.truecoins >= dues))
 
 	@lazy
 	def any_block_exists(self, other):
@@ -641,18 +659,24 @@ class User(Base):
 			return ''
 
 		if self.is_cakeday:
-			return 'cakeday-1'
+			return 'Cakeday.webp'
+
+		if self.equipped_hat_id:
+			return self.equipped_hat.name + '.webp'
+
 		return ''
 
-	@property
 	@lazy
-	def hat_tooltip(self):
+	def hat_tooltip(self, v):
 		if not FEATURES['HATS']:
 			return ''
 
 		if self.is_cakeday:
-			return 'I’ve spent another year rotting my brain with dramaposting, ' \
-			     + 'please ridicule me 🤓'
+			return "I've spent another year rotting my brain with dramaposting, please ridicule me 🤓"
+
+		if self.equipped_hat_id:
+			return self.equipped_hat.censored_description(v)
+
 		return ''
 
 	@lazy
@@ -719,6 +743,11 @@ class User(Base):
 	@lazy
 	def is_suspended(self):
 		return (self.is_banned and (self.unban_utc == 0 or self.unban_utc > time.time()))
+
+	@property
+	@lazy
+	def is_suspended_permanently(self):
+		return (self.is_banned and self.unban_utc == 0)
 
 	@property
 	@lazy
@@ -827,6 +856,8 @@ class User(Base):
 	@property
 	@lazy
 	def can_see_chudrama(self):
+		if self.admin_level: return True
+		if self.client: return True
 		if self.truecoins >= 5000: return True
 		if self.agendaposter: return True
 		if self.patron: return True

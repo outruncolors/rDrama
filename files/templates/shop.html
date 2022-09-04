@@ -23,36 +23,13 @@
 		{% if FEATURES['PROCOINS'] %}
 			<h5 class="mt-4">Your current marseybux: {{v.procoins}}</h3>
 		{% endif %}
+
+		<h5 class="mt-5"><a href="/hats">Buy hats here!</a></h5>
 	</header>
 {% endblock %}
 
 {% block content %}
-	{% if error %}
-	<div class="alert alert-danger alert-dismissible fade show my-3" role="alert">
-		<i class="fas fa-exclamation-circle my-auto"></i>
-		<span>
-			{{error}}
-		</span>
-		<button class="close" data-bs-dismiss="alert" aria-label="Close">
-			<span aria-hidden="true"><i class="far fa-times"></i></span>
-		</button>
-	</div>
-	{% endif %}
-	{% if msg %}
-	<div class="alert alert-success alert-dismissible fade show my-3" role="alert">
-		<i class="fas fa-check-circle my-auto" aria-hidden="true"></i>
-		<span>
-			{{msg}}
-		</span>
-		<button class="close" data-bs-dismiss="alert" aria-label="Close">
-			<span aria-hidden="true"><i class="far fa-times"></i></span>
-		</button>
-	</div>
-	{% endif %}
-
 	<pre>
-
-
 	</pre>
 
 	<div class="overflow-x-auto"><table class="table table-striped shop">
@@ -61,7 +38,7 @@
 					<th scope="col">Icon</th>
 					<th scope="col">Title</th>
 					<th scope="col">Price</th>
-					<th scope="col">Owned</th>
+					<th scope="col" onclick="sort_table(3)">Owned</th>
 					<th scope="col">Buy</th>
 					<th scope="col">Description</th>
 				</tr>
@@ -103,4 +80,5 @@
 
 
 	</pre>
+	<script src="{{asset('js/sort_table.js')}}"></script>
 {% endblock %}

@@ -478,12 +478,15 @@ def transfer_bux(v, username):
 		if not v.shadowbanned:
 			receiver.procoins += amount
 
-			log_message = f"@{v.username} has transferred {amount} Marseybux to @{receiver.username}"
-			send_repeatable_notification(GIFT_NOTIF_ID, log_message)
+			log_message = f"@{v.username} has transferred {amount} marseybux to @{receiver.username}"
+			notif_text = f":marseycapitalistmanlet: @{v.username} has gifted you {amount} marseybux!"
 
-			notif_text = f":marseycapitalistmanlet: @{v.username} has gifted you {amount} Marseybux!"
 			if reason:
+				if len(reason) > 200: return {"error": "Reason is too long, max 200 characters"},400
 				notif_text += f"\n\n> {reason}"
+				log_message += f"\n\n> {reason}"
+
+			send_repeatable_notification(GIFT_NOTIF_ID, log_message)
 			send_repeatable_notification(receiver.id, notif_text)
 
 		g.db.add(receiver)
@@ -576,12 +579,16 @@ def leaderboard(v):
 		FROM (SELECT target_id, count(target_id) AS n FROM userblocks GROUP BY target_id) AS blk \
 		JOIN users ON users.id = blk.target_id ORDER BY blk.n DESC LIMIT 25'))
 
+	users16 = g.db.query(User, func.count(User.owned_hats)).join(User.owned_hats).group_by(User).order_by(func.count(User.owned_hats).desc()).limit(25).all()
+
+	users17 = g.db.query(User, func.count(User.designed_hats)).join(User.designed_hats).group_by(User).order_by(func.count(User.designed_hats).desc()).limit(25).all()
+
 	return render_template("leaderboard.html", v=v, users1=users1, pos1=pos1, users2=users2, pos2=pos2, 
 		users3=users3, pos3=pos3, users4=users4, pos4=pos4, users5=users5, pos5=pos5, 
 		users6=users6, pos6=pos6, users7=users7, pos7=pos7, users9=users9_25, pos9=pos9, 
 		users10=users10, pos10=pos10, users11=users11, pos11=pos11, users12=users12, pos12=pos12, 
 		users13=users13_25, pos13=pos13, users14=users14, pos14=pos14, users15=users15, pos15=pos15,
-		usersBlk=usersBlk)
+		usersBlk=usersBlk, users16=users16, users17=users17)
 
 @app.get("/<id>/css")
 def get_css(id):
@@ -722,9 +729,7 @@ def message2(v, username):
 @limiter.limit("1/second;6/minute;50/hour;200/day", key_func=lambda:f'{SITE}-{session.get("lo_user")}')
 @auth_required
 def messagereply(v):
-
 	body = request.values.get("body", "").strip().replace('‎','')
-
 	body = body.replace('\r\n', '\n')[:10000]
 
 	if not body and not request.files.get("file"): return {"error": "Message is empty!"}
@@ -734,6 +739,11 @@ def messagereply(v):
 	id = int(request.values.get("parent_id"))
 	parent = get_comment(id, v=v)
 	user_id = parent.author.id
+
+	if v.is_suspended_permanently and parent.sentto != 2:
+		return {"error": "You are permabanned and may not reply to messages."}
+	elif v.is_muted and parent.sentto == 2:
+		return {"error": "You are forbidden from replying to modmail."}
 
 	if parent.sentto == 2: user_id = None
 	elif v.id == user_id: user_id = parent.sentto
@@ -927,6 +937,7 @@ def u_username(username, v=None):
 		abort(404)
 
 	if v and v.id not in (u.id, DAD_ID) and u.viewers_recorded:
+		g.db.flush()
 		view = g.db.query(ViewerRelationship).filter_by(viewer_id=v.id, user_id=u.id).one_or_none()
 
 		if view: view.last_view_utc = int(time.time())

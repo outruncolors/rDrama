@@ -95,7 +95,11 @@ def merge(v, id1, id2):
 
 	g.db.add(user1)
 	g.db.add(user2)
+
+	online = cache.get(ONLINE_STR)
 	cache.clear()
+	cache.set(ONLINE_STR, online)
+
 	return redirect(user1.url)
 
 
@@ -141,7 +145,11 @@ def merge_all(v, id):
 		g.db.add(alt)
 
 	g.db.add(user)
+
+	online = cache.get(ONLINE_STR)
 	cache.clear()
+	cache.set(ONLINE_STR, online)
+
 	return redirect(user.url)
 
 
@@ -151,7 +159,7 @@ def make_admin(v, username):
 	if SITE == 'rdrama.net': abort(403)
 
 	user = get_user(username)
-	if not user: abort(404)
+
 	user.admin_level = 2
 	g.db.add(user)
 
@@ -169,7 +177,6 @@ def make_admin(v, username):
 @admin_level_required(3)
 def remove_admin(v, username):
 	user = get_user(username)
-	if not user: abort(404)
 	user.admin_level = 0
 	g.db.add(user)
 
@@ -242,7 +249,6 @@ def distribute(v, option_id):
 @admin_level_required(3)
 def revert_actions(v, username):
 	user = get_user(username)
-	if not user: abort(404)
 
 	ma = ModAction(
 		kind="revert",
@@ -473,7 +479,10 @@ def change_settings(v, setting):
 @app.post("/admin/purge_cache")
 @admin_level_required(3)
 def purge_cache(v):
+	online = cache.get(ONLINE_STR)
 	cache.clear()
+	cache.set(ONLINE_STR, online)
+
 	response = str(requests.post(f'https://api.cloudflare.com/client/v4/zones/{CF_ZONE}/purge_cache', headers=CF_HEADERS, data='{"purge_everything":true}', timeout=5))
 
 	ma = ModAction(
@@ -997,10 +1006,7 @@ def admin_title_change(user_id, v):
 @limiter.limit("1/second;30/minute;200/hour;1000/day")
 @admin_level_required(2)
 def ban_user(user_id, v):
-	
 	user = get_account(user_id)
-
-	if not user: abort(404)
 
 	if user.admin_level >= v.admin_level: abort(403)
 
@@ -1063,10 +1069,9 @@ def ban_user(user_id, v):
 @limiter.limit("1/second;30/minute;200/hour;1000/day")
 @admin_level_required(2)
 def unban_user(user_id, v):
-
 	user = get_account(user_id)
-
-	if not user or not user.is_banned: abort(400)
+	if not user.is_banned:
+		abort(400)
 
 	user.is_banned = 0
 	user.unban_utc = 0
@@ -1093,6 +1098,35 @@ def unban_user(user_id, v):
 	if "@" in request.referrer: return redirect(user.url)
 	else: return {"message": f"@{user.username} was unbanned!"}
 
+@app.post("/mute_user/<int:user_id>/<int:mute_status>")
+@limiter.limit("1/second;30/minute;200/hour;1000/day")
+@admin_level_required(2)
+def mute_user(v, user_id, mute_status):
+	user = get_account(user_id)
+
+	if mute_status != 0 and not user.is_muted:
+		user.is_muted = True
+		log_action = 'mod_mute_user'
+		success_msg = f"@{user.username} was muted!"
+	elif mute_status == 0 and user.is_muted:
+		user.is_muted = False
+		log_action = 'mod_unmute_user'
+		success_msg = f"@{user.username} was un-muted!"
+	else:
+		abort(400)
+
+	ma = ModAction(
+			kind=log_action,
+			user_id=v.id,
+			target_user_id=user.id,
+			)
+
+	g.db.add(user)
+	g.db.add(ma)
+	if 'redir' in request.values:
+		return redirect(user.url)
+	else:
+		return {"message": success_msg}
 
 @app.post("/remove_post/<post_id>")
 @limiter.limit("1/second;30/minute;200/hour;1000/day")
@@ -1126,7 +1160,7 @@ def remove_post(post_id, v):
 	g.db.add(v)
 
 	requests.post(f'https://api.cloudflare.com/client/v4/zones/{CF_ZONE}/purge_cache', 
-		headers=CF_HEADERS, json={'files': [f"{SITE_FULL}/logged_out/"]}, timeout=5)
+		headers=CF_HEADERS, data={'files': [f"{SITE_FULL}/logged_out/"]}, timeout=5)
 
 	return {"message": "Post removed!"}
 
@@ -1385,7 +1419,9 @@ def admin_distinguish_comment(c_id, v):
 @app.get("/admin/dump_cache")
 @admin_level_required(2)
 def admin_dump_cache(v):
+	online = cache.get(ONLINE_STR)
 	cache.clear()
+	cache.set(ONLINE_STR, online)
 
 	ma = ModAction(
 		kind="dump_cache",

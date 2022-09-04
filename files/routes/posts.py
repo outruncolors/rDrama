@@ -169,9 +169,9 @@ def post_id(pid, anything=None, v=None, sub=None):
 			comment.is_blocking = c[2] or 0
 			comment.is_blocked = c[3] or 0
 			output.append(comment)
-		
+
 		pinned = [c[0] for c in comments.filter(Comment.stickied != None).all()]
-		
+
 		comments = comments.filter(Comment.level == 1, Comment.stickied == None)
 
 		comments = sort_comments(sort, comments)
@@ -222,6 +222,12 @@ def post_id(pid, anything=None, v=None, sub=None):
 			pin.stickied_utc = None
 			g.db.add(pin)
 			pinned.remove(pin)
+		elif pin.level > 1:
+			pinned.remove(pin)
+			if pin.top_comment not in pinned:
+				pinned.append(pin.top_comment)
+			if pin.top_comment in comments:
+				comments.remove(pin.top_comment) 
 
 	post.replies = pinned + comments
 
@@ -646,7 +652,7 @@ def is_repost():
 				query=None,
 				fragment=parsed_url.fragment)
 	else:
-		qd = parse_qs(parsed_url.query)
+		qd = parse_qs(parsed_url.query, keep_blank_values=True)
 		filtered = {k: val for k, val in qd.items() if not k.startswith('utm_') and not k.startswith('ref_')}
 
 		new_url = ParseResult(scheme="https",
@@ -700,7 +706,7 @@ def submit_post(v, sub=None):
 		allowed = [x[0] for x in allowed]
 		if v.id not in allowed: return error(f"You don't have sufficient permissions to post in /h/changelog")
 
-	if sub in ('furry','vampire','racist','femboy') and not (v.house and v.house.lower().startswith(sub)):
+	if sub in ('furry','vampire','racist','femboy') and not v.client and not (v.house and v.house.lower().startswith(sub)):
 		return error(f"You need to be a member of House {sub.capitalize()} to post in /h/{sub}")
 
 	if sub and sub != 'none':
@@ -755,7 +761,7 @@ def submit_post(v, sub=None):
 					query=None,
 					fragment=parsed_url.fragment)
 		else:
-			qd = parse_qs(parsed_url.query)
+			qd = parse_qs(parsed_url.query, keep_blank_values=True)
 			filtered = {k: val for k, val in qd.items() if not k.startswith('utm_') and not k.startswith('ref_')}
 
 			new_url = ParseResult(scheme="https",
@@ -796,7 +802,7 @@ def submit_post(v, sub=None):
 			if yt_id_regex.fullmatch(yt_id):
 				req = requests.get(f"https://www.googleapis.com/youtube/v3/videos?id={yt_id}&key={YOUTUBE_KEY}&part=contentDetails", timeout=5).json()
 				if req.get('items'):
-					params = parse_qs(urlparse(url).query)
+					params = parse_qs(urlparse(url).query, keep_blank_values=True)
 					t = params.get('t', params.get('start', [0]))[0]
 					if isinstance(t, str): t = t.replace('s','')
 
@@ -1057,7 +1063,15 @@ def submit_post(v, sub=None):
 	v.post_count = g.db.query(Submission).filter_by(author_id=v.id, deleted_utc=0).count()
 	g.db.add(v)
 
-	upvoters = (CARP_ID, 8094, 10881)
+	if v.id == PIZZASHILL_ID:
+		for uid in PIZZA_VOTERS:
+			autovote = Vote(user_id=uid, submission_id=post.id, vote_type=1)
+			g.db.add(autovote)
+		v.coins += 3
+		v.truecoins += 3
+		g.db.add(v)
+		post.upvotes += 3
+		g.db.add(post)
 
 	cache.delete_memoized(frontlist)
 	cache.delete_memoized(User.userpagelisting)

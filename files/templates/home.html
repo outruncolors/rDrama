@@ -11,7 +11,7 @@
 			{% set preview = sub.banner_url %}
 		{% endif %}
 
-		<title>{{SITE_NAME}}</title>
+		<title>/h/{{sub.name}}</title>
 		
 		<meta property="og:type" content="article">
 		<meta property="og:title" content="/h/{{sub.name}}">
@@ -40,7 +40,7 @@
 
 <div class="row" style="overflow: visible;padding-top:5px;">
 	<div class="col">
-		<a class="btn btn-primary btn-block mt-3" href="/submit"><i class="fas fa-feather-alt mr-2"></i>Create post</a>
+		<a class="btn btn-primary btn-block mt-3" href="{% if sub %}/h/{{sub.name}}{% endif %}/submit"><i class="fas fa-feather-alt mr-2"></i>Create Post</a>
 
 		{% if sub %}
 			{% if v %}

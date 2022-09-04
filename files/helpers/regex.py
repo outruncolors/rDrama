@@ -14,6 +14,8 @@ marseyaward_title_regex = re.compile("( *<img[^>]+>)+", flags=re.A)
 
 marsey_regex = re.compile("[a-z0-9]{1,30}", flags=re.A)
 
+hat_regex = re.compile("[a-zA-Z0-9\-() ,_]{1,50}", flags=re.A)
+
 tags_regex = re.compile("[a-z0-9: ]{1,200}", flags=re.A)
 
 valid_sub_regex = re.compile("^[a-zA-Z0-9_\-]{3,25}$", flags=re.A)
@@ -93,7 +95,7 @@ color_regex = re.compile("[a-z0-9]{6}", flags=re.A)
 
 # lazy match on the {}?, only match if there is trailing stuff
 # don't match between nested </p></li> etc, this can break but works for Snappy
-showmore_regex = re.compile(r"^(.{3000,}?</p>)(\s*<[^/].*)", flags=re.A|re.DOTALL)
+showmore_regex = re.compile(r"^(.{3000,}?</p>)(\s*<p>.*)", flags=re.A|re.DOTALL)
 
 search_token_regex = re.compile('"([^"]*)"|(\S+)', flags=re.A)
 
@@ -130,7 +132,9 @@ def torture_ap(body, username):
 		lines[i] = torture_regex.sub(rf'\1@{username} ', lines[i])
 		lines[i] = torture_regex2.sub(rf'\1@{username} is ', lines[i])
 
-	return ''.join(lines)
+	body = ''.join(lines) + '\n:#trumpjaktalking:'
+
+	return body
 
 
 commands = {

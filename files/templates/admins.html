@@ -13,8 +13,8 @@
 			<tr>
 				<th>#</th>
 				<th>Name</th>
-				<th role="button" onclick="sort_table(2)" style="text-align:right;">Truescore</th>
-				<th role="button" onclick="sort_table(3)" style="text-align:right;">Mod actions</th>
+				<th onclick="sort_table(2)" style="text-align:right;">Truescore</th>
+				<th onclick="sort_table(3)" style="text-align:right;">Mod actions</th>
 			</tr>
 		</thead>
 
@@ -29,6 +29,6 @@
 	</table>
 </div>
 
-<script src="/assets/js/sort_table.js?v=244"></script>
+<script src="{{asset('js/sort_table.js')}}"></script>
 
 {% endblock %}
