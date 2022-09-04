@@ -9,11 +9,7 @@ CREATE TABLE casino_games (
     active boolean NOT NULL DEFAULT true,
     currency casino_game_currency NOT NULL,
     wager integer NOT NULL,
-    winnings integer NOT NULL, -- doubles as result, Δwinnings
+    winnings integer NOT NULL,
     kind casino_game_kind NOT NULL,
     game_state jsonb NOT NULL
 );
-
-ALTER TABLE comments DROP COLUMN slots_result;
-
-ALTER TABLE comments DROP COLUMN blackjack_result;
